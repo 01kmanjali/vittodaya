@@ -35,7 +35,7 @@ export default function AdminFAQsPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>FAQ Management</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{faqs.length} FAQs across {categories.length} categories</p>
         </div>
-        <Button type="button" onClick={() => setShowForm(!showForm)} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
+        <Button type="button" variant="gold" size="md" onClick={() => setShowForm(!showForm)}>
           + Add FAQ
         </Button>
       </div>
@@ -78,10 +78,10 @@ export default function AdminFAQsPage() {
               />
             </div>
             <div className="flex gap-3">
-              <Button type="button" onClick={handleSave} disabled={createFAQ.isPending} className="px-5 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "var(--primary)" }}>
+              <Button type="button" variant="primary" size="md" onClick={handleSave} disabled={createFAQ.isPending}>
                 {createFAQ.isPending ? "Saving…" : "Save FAQ"}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="px-5 py-2 rounded-xl text-sm font-medium border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</Button>
+              <Button type="button" variant="neutral" size="md" onClick={() => setShowForm(false)}>Cancel</Button>
             </div>
           </div>
         </div>
@@ -90,9 +90,9 @@ export default function AdminFAQsPage() {
       <div className="bg-white rounded-2xl border shadow-sm p-4 mb-5 flex flex-wrap gap-3" style={{ borderColor: "var(--border)" }}>
         <input type="text" placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="border rounded-xl px-4 py-2 text-sm outline-none flex-1 min-w-48" style={{ borderColor: "var(--border)" }} />
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={() => setActiveCategory("all")} className="text-xs font-medium px-3 py-1.5 rounded-full border transition-all" style={activeCategory === "all" ? { background: "var(--primary)", color: "white", borderColor: "var(--primary)" } : { color: "var(--text-primary)", borderColor: "var(--border)" }}>All</Button>
+          <Button type="button" size="sm" variant={activeCategory === "all" ? "primary" : "neutral"} className="rounded-full" onClick={() => setActiveCategory("all")}>All</Button>
           {categories.map(cat => (
-            <Button type="button" key={cat} onClick={() => setActiveCategory(cat)} className="text-xs font-medium px-3 py-1.5 rounded-full border transition-all capitalize" style={activeCategory === cat ? { background: "var(--primary)", color: "white", borderColor: "var(--primary)" } : { color: "var(--text-primary)", borderColor: "var(--border)" }}>
+            <Button type="button" key={cat} size="sm" variant={activeCategory === cat ? "primary" : "neutral"} className="rounded-full capitalize" onClick={() => setActiveCategory(cat)}>
               {cat}
             </Button>
           ))}
@@ -115,17 +115,8 @@ export default function AdminFAQsPage() {
                   <p className="text-xs line-clamp-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>{faq.answer}</p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => deleteFAQ.mutate(faq._id)}
-                    disabled={deleteFAQ.isPending}
-                    className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50"
-                    style={{ borderColor: "var(--border)", color: "var(--danger)" }}
-                  >
-                    Delete
-                  </Button>
+                  <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                  <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteFAQ.mutate(faq._id)} disabled={deleteFAQ.isPending}>Delete</Button>
                 </div>
               </div>
             </div>

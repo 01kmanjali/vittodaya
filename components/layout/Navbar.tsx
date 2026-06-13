@@ -164,7 +164,8 @@ export default function Navbar() {
     });
   }, [pathname]);
 
-  function handleLogout() {
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
     clearSessionCookies();
     setSession(null);
     setMobileOpen(false);

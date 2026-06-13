@@ -20,7 +20,7 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: AuthUser | null) => void;
   setLoading: (v: boolean) => void;
-  login: (email: string, password: string) => Promise<{ error?: string }>;
+  login: (email: string, password: string) => Promise<{ error?: string; role?: string }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
           const data = await res.json();
           if (!res.ok) return { error: data.error ?? "Login failed" };
           set({ user: data.user });
-          return {};
+          return { role: data.user?.role };
         } finally {
           set({ isLoading: false });
         }

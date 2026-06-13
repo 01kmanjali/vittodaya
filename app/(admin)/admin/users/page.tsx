@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useAdminUsers } from "@/lib/queries/useAdminAnalytics";
 
 const kycColors: Record<string, { bg: string; text: string }> = {
-  verified: { bg: "#f0fdf4", text: "#16a34a" },
-  pending: { bg: "#fef9c3", text: "#ca8a04" },
-  rejected: { bg: "#fef2f2", text: "#dc2626" },
+  verified:    { bg: "#f0fdf4", text: "#16a34a" },
+  pending:     { bg: "#fef9c3", text: "#ca8a04" },
+  rejected:    { bg: "#fef2f2", text: "#dc2626" },
   not_started: { bg: "#f3f4f6", text: "#6b7280" },
 };
 
@@ -57,9 +57,7 @@ export default function AdminUsersPage() {
             style={{ borderColor: "var(--border)" }}
           />
         </div>
-        {isLoading && (
-          <p className="px-5 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>Loading users…</p>
-        )}
+        {isLoading && <p className="px-5 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>Loading users…</p>}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -104,9 +102,9 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>View</Button>
+                        <Button variant="primaryOutline" size="sm">View</Button>
                         {user.kycStatus === "pending" && (
-                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white" style={{ background: "var(--success)" }}>Verify KYC</Button>
+                          <Button variant="success" size="sm">Verify KYC</Button>
                         )}
                       </div>
                     </td>

@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken } from "./lib/auth";
+import { jwtVerify } from "jose";
 
 const ADMIN_ROUTES = ["/admin"];
 const USER_ROUTES = ["/dashboard", "/applications", "/profile"];
 const AUTH_ROUTES = ["/login", "/register"];
 
-function getSession(req: NextRequest): { role: "admin" | "user" } | null {
+async function getSession(req: NextRequest): Promise<{ role: "admin" | "user" } | null> {
   const token = req.cookies.get("vf_token")?.value;
   if (!token) return null;
   try {
-    const payload = verifyToken(token);
-    return { role: payload.role };
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
+    return { role: payload.role as "admin" | "user" };
   } catch {
     return null;
   }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const session = getSession(req);
+  const session = await getSession(req);
   const role = session?.role ?? null;
 
   if (ADMIN_ROUTES.some((r) => pathname.startsWith(r))) {

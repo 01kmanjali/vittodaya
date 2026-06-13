@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard, BarChart2, User, Factory, Car, Home, FileText,
   LayoutGrid, Building2, Newspaper, HelpCircle, TrendingUp, Users,
-  PlusCircle, ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe,
+  ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -81,7 +81,8 @@ export default function AdminSidebar() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
 
-  function handleLogout() {
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
     clearCookies();
     router.push("/login");
   }

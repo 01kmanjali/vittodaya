@@ -15,14 +15,9 @@ function fmt(n: number) {
 }
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  active: "default",
-  under_review: "secondary",
-  matured: "outline",
-  submitted: "default",
-  draft: "secondary",
-  cancelled: "destructive",
-  rejected: "destructive",
-  approved: "default",
+  active: "default", under_review: "secondary", matured: "outline",
+  submitted: "default", draft: "secondary", cancelled: "destructive",
+  rejected: "destructive", approved: "default",
 };
 
 export default function AdminDashboard() {
@@ -87,7 +82,9 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
             <CardTitle className="text-base font-semibold">Recent Applications</CardTitle>
-            <Link href="/admin/applications" className="text-xs" style={{ color: "var(--primary)" }}>View All</Link>
+            <Button variant="primaryOutline" size="sm" asChild>
+              <Link href="/admin/applications">View All</Link>
+            </Button>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
@@ -115,7 +112,7 @@ export default function AdminDashboard() {
           <CardHeader className="border-b pb-4">
             <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-2">
+          <CardContent className="p-4 space-y-1">
             {[
               { label: "Add New FD Scheme", Icon: Plus, href: "/admin/fd-schemes", color: "text-blue-700" },
               { label: "Review Pending Applications", Icon: Clock, href: "/admin/applications", color: "text-amber-600" },

@@ -18,9 +18,7 @@ export default function AdminFDSchemesPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>FD Schemes</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage fixed deposit schemes from partner institutions</p>
         </div>
-        <Button type="button" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "var(--primary)" }}>
-          + Add Scheme
-        </Button>
+        <Button variant="primary" size="md">+ Add Scheme</Button>
       </div>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-6">
@@ -79,8 +77,8 @@ export default function AdminFDSchemesPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                      <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>
+                      <Button variant="primaryOutline" size="sm">Edit</Button>
+                      <Button variant={scheme.isActive ? "dangerOutline" : "success"} size="sm">
                         {scheme.isActive ? "Disable" : "Enable"}
                       </Button>
                     </div>

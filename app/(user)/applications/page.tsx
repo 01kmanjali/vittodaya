@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useApplications } from "@/lib/queries/useApplications";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -29,9 +30,9 @@ export default function ApplicationsPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>My Applications</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>All your FD investment applications</p>
         </div>
-        <Link href="/fd" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "var(--primary)" }}>
-          + New FD
-        </Link>
+        <Button asChild variant="primary" size="md">
+          <Link href="/fd">+ New FD</Link>
+        </Button>
       </div>
 
       {isLoading ? (
@@ -43,9 +44,9 @@ export default function ApplicationsPage() {
           <div className="text-4xl mb-3">📋</div>
           <p className="font-semibold mb-1">No applications yet</p>
           <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>Explore and invest in high-yield fixed deposits.</p>
-          <Link href="/fd" className="inline-block text-sm font-semibold px-5 py-2.5 rounded-xl text-white" style={{ background: "var(--primary)" }}>
-            Browse FD Schemes
-          </Link>
+          <Button asChild variant="primary" size="md">
+            <Link href="/fd">Browse FD Schemes</Link>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">

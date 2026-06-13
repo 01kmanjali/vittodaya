@@ -54,7 +54,7 @@ export default function UserDashboard() {
             Here&apos;s an overview of your fixed deposit portfolio.
           </p>
         </div>
-        <Button asChild className="text-white" style={{ background: "var(--primary)" }}>
+        <Button asChild variant="primary" size="md">
           <Link href="/fd">Invest More</Link>
         </Button>
       </div>
@@ -101,7 +101,7 @@ export default function UserDashboard() {
               <Briefcase className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
               <p className="font-medium mb-1">No FDs yet</p>
               <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>Start your investment journey today.</p>
-              <Button asChild className="text-white" style={{ background: "var(--primary)" }}>
+              <Button asChild variant="primary" size="md">
                 <Link href="/fd">Explore FDs</Link>
               </Button>
             </div>

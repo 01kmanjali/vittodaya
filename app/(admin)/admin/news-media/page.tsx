@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useNews, useDeleteNews } from "@/lib/queries/useNews";
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
-  "press-release": { bg: "#eff6ff", text: "#1d4ed8" },
+  "press-release":  { bg: "#eff6ff", text: "#1d4ed8" },
   "media-coverage": { bg: "#f0fdf4", text: "#15803d" },
-  awards: { bg: "#fef9c3", text: "#b45309" },
-  announcement: { bg: "#fdf4ff", text: "#7e22ce" },
+  awards:           { bg: "#fef9c3", text: "#b45309" },
+  announcement:     { bg: "#fdf4ff", text: "#7e22ce" },
 };
 
 export default function AdminNewsMediaPage() {
@@ -27,9 +27,7 @@ export default function AdminNewsMediaPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>News & Media</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage news articles, press releases, and awards</p>
         </div>
-        <Button type="button" className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
-          + Add News
-        </Button>
+        <Button type="button" variant="gold" size="md">+ Add News</Button>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -95,8 +93,8 @@ export default function AdminNewsMediaPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                        <Button type="button" variant="outline" onClick={() => deleteNews.mutate(article._id)} disabled={deleteNews.isPending} className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Delete</Button>
+                        <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                        <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteNews.mutate(article._id)} disabled={deleteNews.isPending}>Delete</Button>
                       </div>
                     </td>
                   </tr>
@@ -126,8 +124,8 @@ export default function AdminNewsMediaPage() {
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex gap-2">
-                      <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                      <Button type="button" variant="outline" onClick={() => deleteNews.mutate(pr._id)} disabled={deleteNews.isPending} className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Delete</Button>
+                      <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                      <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteNews.mutate(pr._id)} disabled={deleteNews.isPending}>Delete</Button>
                     </div>
                   </td>
                 </tr>
@@ -157,8 +155,8 @@ export default function AdminNewsMediaPage() {
               </div>
               {a.excerpt && <p className="text-xs mb-3 line-clamp-2" style={{ color: "var(--text-secondary)" }}>{a.excerpt}</p>}
               <div className="flex gap-2">
-                <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                <Button type="button" variant="outline" onClick={() => deleteNews.mutate(a._id)} disabled={deleteNews.isPending} className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Delete</Button>
+                <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteNews.mutate(a._id)} disabled={deleteNews.isPending}>Delete</Button>
               </div>
             </div>
           ))}

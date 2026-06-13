@@ -30,7 +30,7 @@ function LoginForm() {
       setError(result.error);
       return;
     }
-    const role = useAuthStore.getState().user?.role;
+    const role = result.role;
     if (redirectTo) {
       router.push(redirectTo);
     } else if (role === "admin") {

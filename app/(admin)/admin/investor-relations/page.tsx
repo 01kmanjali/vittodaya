@@ -21,7 +21,7 @@ export default function AdminInvestorRelationsPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Investor Relations</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage financial results, annual reports, and board information</p>
         </div>
-        <Button type="button" onClick={() => setShowAddResult(!showAddResult)} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
+        <Button type="button" variant="gold" size="md" onClick={() => setShowAddResult(!showAddResult)}>
           + Add Record
         </Button>
       </div>
@@ -56,8 +56,8 @@ export default function AdminInvestorRelationsPage() {
                 ))}
               </div>
               <div className="flex gap-3 mt-4">
-                <Button type="button" className="px-5 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "var(--primary)" }}>Save</Button>
-                <Button type="button" variant="outline" onClick={() => setShowAddResult(false)} className="px-5 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>Cancel</Button>
+                <Button type="button" variant="primary" size="md">Save</Button>
+                <Button type="button" variant="neutral" size="md" onClick={() => setShowAddResult(false)}>Cancel</Button>
               </div>
             </div>
           )}
@@ -81,8 +81,8 @@ export default function AdminInvestorRelationsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                        <Button type="button" variant="outline" onClick={() => deleteRecord.mutate(r._id)} disabled={deleteRecord.isPending} className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Delete</Button>
+                        <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                        <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteRecord.mutate(r._id)} disabled={deleteRecord.isPending}>Delete</Button>
                       </div>
                     </td>
                   </tr>
@@ -106,8 +106,8 @@ export default function AdminInvestorRelationsPage() {
                 {r.publishedDate ? new Date(String(r.publishedDate)).toLocaleDateString("en-IN") : "—"}
               </p>
               <div className="flex gap-2">
-                <Button type="button" variant="outline" className="flex-1 text-xs font-medium px-2 py-1.5 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Replace</Button>
-                <Button type="button" variant="outline" onClick={() => deleteRecord.mutate(r._id)} disabled={deleteRecord.isPending} className="flex-1 text-xs font-medium px-2 py-1.5 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Remove</Button>
+                <Button type="button" variant="primaryOutline" size="sm" className="flex-1">Replace</Button>
+                <Button type="button" variant="dangerOutline" size="sm" className="flex-1" onClick={() => deleteRecord.mutate(r._id)} disabled={deleteRecord.isPending}>Remove</Button>
               </div>
             </div>
           ))}
@@ -130,8 +130,8 @@ export default function AdminInvestorRelationsPage() {
                   <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{m.title}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-                  <Button type="button" variant="outline" onClick={() => deleteRecord.mutate(m._id)} disabled={deleteRecord.isPending} className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--danger)" }}>Remove</Button>
+                  <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
+                  <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteRecord.mutate(m._id)} disabled={deleteRecord.isPending}>Remove</Button>
                 </div>
               </div>
               {m.description && <p className="text-xs" style={{ color: "var(--text-secondary)" }}>{m.description}</p>}

@@ -13,9 +13,7 @@ export default function AdminBanksPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Banks & NBFCs</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage partner institutions on the platform</p>
         </div>
-        <Button type="button" className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "var(--primary)" }}>
-          + Add Institution
-        </Button>
+        <Button variant="primary" size="md">+ Add Institution</Button>
       </div>
 
       <div className="grid sm:grid-cols-4 gap-4 mb-6">
@@ -69,8 +67,8 @@ export default function AdminBanksPage() {
             </div>
             <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>{bank.description}</p>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
-              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: bank.isActive ? "var(--danger)" : "var(--success)" }}>
+              <Button variant="primaryOutline" size="sm" className="flex-1">Edit</Button>
+              <Button variant={bank.isActive ? "dangerOutline" : "success"} size="sm" className="flex-1">
                 {bank.isActive ? "Disable" : "Enable"}
               </Button>
             </div>

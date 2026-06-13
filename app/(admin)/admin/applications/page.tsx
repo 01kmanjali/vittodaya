@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useApplications } from "@/lib/queries/useApplications";
+import { useApplications, useUpdateApplicationStatus } from "@/lib/queries/useApplications";
 
 const statusColors: Record<string, { bg: string; text: string }> = {
-  active: { bg: "#f0fdf4", text: "#16a34a" },
+  active:       { bg: "#f0fdf4", text: "#16a34a" },
   under_review: { bg: "#fef9c3", text: "#ca8a04" },
-  matured: { bg: "#eff6ff", text: "#2563eb" },
-  submitted: { bg: "#f0fdf4", text: "#16a34a" },
-  draft: { bg: "#f3f4f6", text: "#6b7280" },
-  cancelled: { bg: "#fef2f2", text: "#dc2626" },
-  rejected: { bg: "#fef2f2", text: "#dc2626" },
-  approved: { bg: "#f0fdf4", text: "#16a34a" },
+  matured:      { bg: "#eff6ff", text: "#2563eb" },
+  submitted:    { bg: "#f0fdf4", text: "#16a34a" },
+  draft:        { bg: "#f3f4f6", text: "#6b7280" },
+  cancelled:    { bg: "#fef2f2", text: "#dc2626" },
+  rejected:     { bg: "#fef2f2", text: "#dc2626" },
+  approved:     { bg: "#f0fdf4", text: "#16a34a" },
 };
 
 function fmt(n: number) {
@@ -23,6 +23,7 @@ const statuses = ["all", "active", "under_review", "matured", "submitted", "canc
 
 export default function AdminApplicationsPage() {
   const { data: applications = [], isLoading } = useApplications();
+  const updateStatus = useUpdateApplicationStatus();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -41,9 +42,7 @@ export default function AdminApplicationsPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Applications</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage all FD applications across the platform</p>
         </div>
-        <Button type="button" variant="outline" className="px-4 py-2 rounded-xl text-sm font-medium border hover:bg-gray-50" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>
-          Export CSV
-        </Button>
+        <Button variant="primaryOutline" size="md">Export CSV</Button>
       </div>
 
       <div className="bg-white rounded-2xl border p-4 mb-5 flex flex-wrap gap-3 items-center shadow-sm" style={{ borderColor: "var(--border)" }}>
@@ -57,17 +56,7 @@ export default function AdminApplicationsPage() {
         />
         <div className="flex flex-wrap gap-2">
           {statuses.map(s => (
-            <Button
-              type="button"
-              key={s}
-              onClick={() => setFilter(s)}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border capitalize transition-all"
-              style={
-                filter === s
-                  ? { background: "var(--primary)", color: "white", borderColor: "var(--primary)" }
-                  : { background: "white", color: "var(--text-primary)", borderColor: "var(--border)" }
-              }
-            >
+            <Button key={s} type="button" size="sm" onClick={() => setFilter(s)} variant={filter === s ? "primary" : "neutral"} className="rounded-full capitalize">
               {s === "all" ? "All" : s.replace("_", " ")}
             </Button>
           ))}
@@ -110,11 +99,9 @@ export default function AdminApplicationsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>
-                          View
-                        </Button>
+                        <Button variant="primaryOutline" size="sm">View</Button>
                         {app.status === "under_review" && (
-                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white hover:opacity-80" style={{ background: "var(--success)" }}>
+                          <Button variant="success" size="sm" onClick={() => updateStatus.mutate({ id: app._id, status: "approved" })}>
                             Approve
                           </Button>
                         )}

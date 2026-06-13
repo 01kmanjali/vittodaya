@@ -28,7 +28,8 @@ export default function UserSidebar() {
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
 
-  function handleLogout() {
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
     clearCookies();
     router.push("/login");
   }
