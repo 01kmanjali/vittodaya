@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { users } from "@/constants/users";
+import { useAdminUsers } from "@/lib/queries/useAdminAnalytics";
 
 const kycColors: Record<string, { bg: string; text: string }> = {
   verified: { bg: "#f0fdf4", text: "#16a34a" },
@@ -13,9 +13,14 @@ const kycColors: Record<string, { bg: string; text: string }> = {
 
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
-  const regularUsers = users.filter(u => u.role === "user");
+  const { data, isLoading } = useAdminUsers();
+  const allUsers = data?.users ?? [];
+  const regularUsers = allUsers.filter(u => u.role === "user");
+
   const filtered = regularUsers.filter(u =>
-    !search || u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
+    !search ||
+    `${u.firstName ?? ""} ${u.lastName ?? ""}`.toLowerCase().includes(search.toLowerCase()) ||
+    u.email.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -52,6 +57,9 @@ export default function AdminUsersPage() {
             style={{ borderColor: "var(--border)" }}
           />
         </div>
+        {isLoading && (
+          <p className="px-5 py-4 text-sm" style={{ color: "var(--text-secondary)" }}>Loading users…</p>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -64,20 +72,21 @@ export default function AdminUsersPage() {
             <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
               {filtered.map(user => {
                 const kc = kycColors[user.kycStatus] ?? kycColors.not_started;
+                const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
                 return (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: "var(--primary)" }}>
-                          {user.name.charAt(0)}
+                          {name.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-medium" style={{ color: "var(--text-primary)" }}>{user.name}</div>
+                          <div className="font-medium" style={{ color: "var(--text-primary)" }}>{name}</div>
                           <div className="text-xs" style={{ color: "var(--text-secondary)" }}>{user.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>{user.phone}</td>
+                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>{user.phone ?? "—"}</td>
                     <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>{user.city ?? "—"}</td>
                     <td className="px-5 py-4">
                       <span className="text-xs font-semibold px-2 py-0.5 rounded-full capitalize" style={{ background: kc.bg, color: kc.text }}>
@@ -85,7 +94,9 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-center">{user.isSeniorCitizen ? "✅" : "—"}</td>
-                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>{user.createdAt}</td>
+                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>
+                      {user.createdAt ? new Date(String(user.createdAt)).toLocaleDateString("en-IN") : "—"}
+                    </td>
                     <td className="px-5 py-4">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                         {user.status}
@@ -93,13 +104,9 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>
-                          View
-                        </Button>
+                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>View</Button>
                         {user.kycStatus === "pending" && (
-                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white" style={{ background: "var(--success)" }}>
-                            Verify KYC
-                          </Button>
+                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white" style={{ background: "var(--success)" }}>Verify KYC</Button>
                         )}
                       </div>
                     </td>

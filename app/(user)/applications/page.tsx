@@ -1,8 +1,8 @@
-import { applications, getApplicationsByUser } from "@/constants/applications";
-import { currentUser } from "@/constants/users";
-import Link from "next/link";
+"use client";
 
-const userApps = getApplicationsByUser(currentUser.id);
+import Link from "next/link";
+import { useApplications } from "@/lib/queries/useApplications";
+import { Loader2 } from "lucide-react";
 
 const statusColors: Record<string, { bg: string; text: string }> = {
   active: { bg: "#f0fdf4", text: "#16a34a" },
@@ -20,6 +20,8 @@ function fmt(n: number) {
 }
 
 export default function ApplicationsPage() {
+  const { data: applications = [], isLoading } = useApplications();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -32,7 +34,11 @@ export default function ApplicationsPage() {
         </Link>
       </div>
 
-      {userApps.length === 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin" style={{ color: "var(--primary)" }} />
+        </div>
+      ) : applications.length === 0 ? (
         <div className="bg-white rounded-2xl border p-16 text-center" style={{ borderColor: "var(--border)" }}>
           <div className="text-4xl mb-3">📋</div>
           <p className="font-semibold mb-1">No applications yet</p>
@@ -43,22 +49,22 @@ export default function ApplicationsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {userApps.map(app => {
+          {applications.map(app => {
             const sc = statusColors[app.status] ?? statusColors.draft;
             return (
-              <div key={app.id} className="bg-white rounded-2xl border p-5 shadow-sm" style={{ borderColor: "var(--border)" }}>
+              <div key={String(app._id)} className="bg-white rounded-2xl border p-5 shadow-sm" style={{ borderColor: "var(--border)" }}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white shrink-0" style={{ background: "var(--primary)" }}>
-                      {app.bankName.charAt(0)}
+                      {app.bankName?.charAt(0) ?? "?"}
                     </div>
                     <div>
-                      <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{app.bankName}</h3>
+                      <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>{String(app.bankName ?? "—")}</h3>
                       <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                        {app.schemeName} · Applied {app.appliedAt}
+                        {String(app.schemeName ?? "")} · Applied {new Date(String(app.createdAt ?? Date.now())).toLocaleDateString("en-IN")}
                       </p>
                       {app.fdNumber && (
-                        <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--text-secondary)" }}>{app.fdNumber}</p>
+                        <p className="text-xs mt-0.5 font-mono" style={{ color: "var(--text-secondary)" }}>{String(app.fdNumber)}</p>
                       )}
                     </div>
                   </div>
@@ -69,10 +75,10 @@ export default function ApplicationsPage() {
 
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { label: "Principal", value: `₹${fmt(app.principalAmount)}` },
-                    { label: "Rate", value: `${app.interestRate}% p.a.` },
-                    { label: "Tenure", value: app.tenureLabel },
-                    { label: "Maturity", value: app.maturityDate ?? "—" },
+                    { label: "Principal", value: `₹${fmt(app.principalAmount ?? 0)}` },
+                    { label: "Rate", value: `${String(app.interestRate)}% p.a.` },
+                    { label: "Tenure", value: app.tenureMonths ? `${app.tenureMonths} months` : "—" },
+                    { label: "Maturity Amount", value: app.maturityAmount ? `₹${fmt(app.maturityAmount)}` : "—" },
                   ].map(({ label, value }) => (
                     <div key={label} className="rounded-xl p-3" style={{ background: "var(--bg-light)" }}>
                       <p className="text-xs mb-0.5" style={{ color: "var(--text-secondary)" }}>{label}</p>
@@ -81,16 +87,15 @@ export default function ApplicationsPage() {
                   ))}
                 </div>
 
-                {app.maturityDate && (
+                {app.maturityAmount && app.principalAmount && (
                   <div className="mt-3 flex items-center justify-between text-xs" style={{ color: "var(--text-secondary)" }}>
-                    <span>Maturity Amount: <strong style={{ color: "var(--success)" }}>₹{fmt(app.maturityAmount)}</strong></span>
                     <span>Interest Earned: <strong style={{ color: "var(--success)" }}>+₹{fmt(app.maturityAmount - app.principalAmount)}</strong></span>
                   </div>
                 )}
 
                 {app.remarks && (
                   <p className="mt-2 text-xs px-3 py-2 rounded-lg" style={{ background: "#fef9c3", color: "#92400e" }}>
-                    ⚠️ {app.remarks}
+                    ⚠️ {String(app.remarks)}
                   </p>
                 )}
               </div>

@@ -1,11 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import EMICalculator from "@/components/loans/EMICalculator";
 import EligibilityCalculator from "@/components/loans/EligibilityCalculator";
-import { getLoanByType } from "@/constants/loans";
-import { Package, Settings, Store, Laptop, Truck, HardHat, Check, Factory, TrendingUp } from "lucide-react";
+import { connectDB } from "@/lib/mongodb";
+import LoanProductModel from "@/lib/models/LoanProduct";
+import { Package, Settings, Store, Laptop, Truck, HardHat, Factory, TrendingUp, Check } from "lucide-react";
 
-const loan = getLoanByType("msme")!;
+interface LoanProduct {
+  rateFrom: number;
+  heroDesc: string;
+  features: Array<{ title: string; desc: string }>;
+  eligibility: Array<{ label: string; value: string }>;
+  documents: Array<{ category: string; items: string[] }>;
+}
 
 const useCases = [
   { icon: "📦", title: "Working Capital", desc: "Finance day-to-day operations, raw material procurement, and inventory." },
@@ -30,13 +38,16 @@ function mapUseCaseIcon(e?: string) {
   }
 }
 
-export default function MSMELoanPage() {
+export default async function MSMELoanPage() {
+  await connectDB();
+  const raw = await LoanProductModel.findOne({ type: "msme", isActive: true }).lean();
+  if (!raw) notFound();
+  const loan = JSON.parse(JSON.stringify(raw)) as LoanProduct;
+
   return (
     <>
-      {/* Hero */}
       <section className="gradient-hero text-white py-16 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-10" style={{ background: "white" }} />
-        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10" style={{ background: "white" }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -62,24 +73,13 @@ export default function MSMELoanPage() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
-                  Apply Now
-                </Link>
-                <a href="#calculators" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30">
-                  Calculate EMI
-                </a>
+                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
+                <a href="#calculators" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30">Calculate EMI</a>
               </div>
             </div>
             <div className="hidden lg:flex flex-col gap-4 items-center">
               <div className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/20">
-                <Image
-                  src="/images/loans-hero.jpeg"
-                  alt="MSME business loan"
-                  width={600}
-                  height={420}
-                  className="w-full object-cover"
-                  priority
-                />
+                <Image src="/images/loans-hero.jpeg" alt="MSME business loan" width={600} height={420} className="w-full object-cover" priority />
                 <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 flex gap-3">
                   {loan.features.slice(0, 2).map(f => (
@@ -95,12 +95,10 @@ export default function MSMELoanPage() {
         </div>
       </section>
 
-      {/* Use Cases */}
       <section className="py-14" style={{ background: "var(--bg-light)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>What Can You Use It For?</h2>
-            <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>Flexible financing for every stage of your business</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {useCases.map(u => (
@@ -114,12 +112,10 @@ export default function MSMELoanPage() {
         </div>
       </section>
 
-      {/* Calculators */}
       <section id="calculators" className="py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Business Loan Calculators</h2>
-            <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>Plan your loan amount and repayment schedule</p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8">
             <EMICalculator title="Business Loan EMI Calculator" defaultAmount={1000000} minAmount={100000} maxAmount={10000000} defaultRate={14} defaultTenure={36} maxTenure={84} loanType="personal" />
@@ -128,7 +124,6 @@ export default function MSMELoanPage() {
         </div>
       </section>
 
-      {/* Eligibility & Docs */}
       <section className="py-14" style={{ background: "var(--bg-light)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
@@ -167,20 +162,12 @@ export default function MSMELoanPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-14">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Grow Your Business Today</h2>
-          <p className="text-sm mb-6" style={{ color: "var(--text-secondary)" }}>
-            Quick approval, minimal paperwork, and dedicated relationship managers for MSME borrowers.
-          </p>
           <div className="flex justify-center gap-4 flex-wrap">
-            <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
-              Apply for Business Loan
-            </Link>
-            <Link href="/contact" className="px-6 py-3 rounded-xl font-semibold border hover:bg-gray-50" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>
-              Talk to an Expert
-            </Link>
+            <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply for Business Loan</Link>
+            <Link href="/contact" className="px-6 py-3 rounded-xl font-semibold border hover:bg-gray-50" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>Talk to an Expert</Link>
           </div>
         </div>
       </section>

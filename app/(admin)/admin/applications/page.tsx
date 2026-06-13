@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { applications } from "@/constants/applications";
+import { useApplications } from "@/lib/queries/useApplications";
 
 const statusColors: Record<string, { bg: string; text: string }> = {
   active: { bg: "#f0fdf4", text: "#16a34a" },
@@ -22,12 +22,15 @@ function fmt(n: number) {
 const statuses = ["all", "active", "under_review", "matured", "submitted", "cancelled"];
 
 export default function AdminApplicationsPage() {
+  const { data: applications = [], isLoading } = useApplications();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
   const filtered = applications.filter(a => {
     const matchesStatus = filter === "all" || a.status === filter;
-    const matchesSearch = !search || a.userName.toLowerCase().includes(search.toLowerCase()) || a.bankName.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = !search ||
+      String(a.userName ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      String(a.bankName ?? "").toLowerCase().includes(search.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -38,12 +41,11 @@ export default function AdminApplicationsPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Applications</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage all FD applications across the platform</p>
         </div>
-        <Button type="button" variant="outline" className="px-4 py-2 rounded-xl text-sm font-medium border hover:bg-gray-50 transition-colors" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>
+        <Button type="button" variant="outline" className="px-4 py-2 rounded-xl text-sm font-medium border hover:bg-gray-50" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>
           Export CSV
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="bg-white rounded-2xl border p-4 mb-5 flex flex-wrap gap-3 items-center shadow-sm" style={{ borderColor: "var(--border)" }}>
         <input
           type="text"
@@ -74,7 +76,7 @@ export default function AdminApplicationsPage() {
 
       <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: "var(--border)" }}>
         <div className="px-5 py-3 border-b text-sm" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
-          Showing <strong>{filtered.length}</strong> applications
+          {isLoading ? "Loading…" : <><strong>{filtered.length}</strong> applications</>}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -87,18 +89,20 @@ export default function AdminApplicationsPage() {
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
               {filtered.map(app => {
-                const sc = statusColors[app.status] ?? statusColors.draft;
+                const sc = statusColors[app.status ?? ""] ?? statusColors.draft;
                 return (
-                  <tr key={app.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 font-medium" style={{ color: "var(--text-primary)" }}>{app.userName}</td>
+                  <tr key={app._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-5 py-4 font-medium" style={{ color: "var(--text-primary)" }}>{String(app.userName ?? "—")}</td>
                     <td className="px-5 py-4">
-                      <div style={{ color: "var(--text-primary)" }}>{app.bankName}</div>
-                      <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{app.schemeName}</div>
+                      <div style={{ color: "var(--text-primary)" }}>{String(app.bankName ?? "—")}</div>
+                      <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{String(app.schemeName ?? "—")}</div>
                     </td>
                     <td className="px-5 py-4 font-semibold">₹{fmt(app.principalAmount)}</td>
                     <td className="px-5 py-4 font-bold" style={{ color: "var(--success)" }}>{app.interestRate}%</td>
-                    <td className="px-5 py-4">{app.tenureLabel}</td>
-                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>{app.appliedAt}</td>
+                    <td className="px-5 py-4">{app.tenureMonths ? `${app.tenureMonths}M` : "—"}</td>
+                    <td className="px-5 py-4" style={{ color: "var(--text-secondary)" }}>
+                      {app.createdAt ? new Date(String(app.createdAt)).toLocaleDateString("en-IN") : "—"}
+                    </td>
                     <td className="px-5 py-4">
                       <span className="text-xs font-semibold px-2 py-1 rounded-full capitalize" style={{ background: sc.bg, color: sc.text }}>
                         {app.status.replace("_", " ")}
@@ -106,11 +110,11 @@ export default function AdminApplicationsPage() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex gap-2">
-                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>
+                        <Button type="button" variant="outline" className="text-xs font-medium px-2.5 py-1 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>
                           View
                         </Button>
                         {app.status === "under_review" && (
-                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white transition-opacity hover:opacity-80" style={{ background: "var(--success)" }}>
+                          <Button type="button" className="text-xs font-medium px-2.5 py-1 rounded-lg text-white hover:opacity-80" style={{ background: "var(--success)" }}>
                             Approve
                           </Button>
                         )}

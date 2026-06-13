@@ -7,6 +7,12 @@ export interface AuthUser {
   name: string;
   email: string;
   role: "admin" | "user";
+  phone?: string;
+  kycStatus?: "not_started" | "pending" | "verified" | "rejected";
+  isSeniorCitizen?: boolean;
+  status?: string;
+  panNumber?: string;
+  aadharNumber?: string;
 }
 
 interface AuthState {

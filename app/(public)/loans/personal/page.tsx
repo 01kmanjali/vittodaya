@@ -1,10 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import EMICalculator from "@/components/loans/EMICalculator";
 import EligibilityCalculator from "@/components/loans/EligibilityCalculator";
-import { getLoanByType } from "@/constants/loans";
+import { connectDB } from "@/lib/mongodb";
+import LoanProductModel from "@/lib/models/LoanProduct";
 
-const loan = getLoanByType("personal")!;
+interface LoanProduct {
+  rateFrom: number;
+  heroDesc: string;
+  tags: string[];
+  features: Array<{ title: string; desc: string; icon?: string }>;
+  eligibility: Array<{ label: string; value: string }>;
+  documents: Array<{ category: string; items: string[] }>;
+}
 
 const steps = [
   { step: "01", title: "Fill Application", desc: "Complete the online form with personal and income details in under 5 minutes." },
@@ -13,10 +22,14 @@ const steps = [
   { step: "04", title: "Receive Funds", desc: "Loan amount is credited directly to your bank account within 24 hours of approval." },
 ];
 
-export default function PersonalLoanPage() {
+export default async function PersonalLoanPage() {
+  await connectDB();
+  const raw = await LoanProductModel.findOne({ type: "personal", isActive: true }).lean();
+  if (!raw) notFound();
+  const loan = JSON.parse(JSON.stringify(raw)) as LoanProduct;
+
   return (
     <>
-      {/* Hero */}
       <section className="gradient-hero text-white py-16 relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-10" style={{ background: "white" }} />
         <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full opacity-10" style={{ background: "white" }} />
@@ -55,14 +68,7 @@ export default function PersonalLoanPage() {
             </div>
             <div className="hidden lg:flex flex-col gap-4 items-center">
               <div className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/20">
-                <Image
-                  src="/images/loans-hero.jpeg"
-                  alt="Personal loan – quick approval"
-                  width={600}
-                  height={420}
-                  className="w-full object-cover"
-                  priority
-                />
+                <Image src="/images/loans-hero.jpeg" alt="Personal loan – quick approval" width={600} height={420} className="w-full object-cover" priority />
                 <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 flex gap-3">
                   {loan.features.slice(0, 2).map(f => (
@@ -78,7 +84,6 @@ export default function PersonalLoanPage() {
         </div>
       </section>
 
-      {/* Tags */}
       <div className="border-b py-3" style={{ background: "var(--bg-light)", borderColor: "var(--border)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-3 flex-wrap">
           {loan.tags.map(t => (
@@ -87,13 +92,11 @@ export default function PersonalLoanPage() {
         </div>
       </div>
 
-      {/* Calculators */}
       <section id="emi-calculator" className="py-14" style={{ background: "var(--bg-light)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <span className="inline-block text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-3" style={{ background: "#eff6ff", color: "var(--primary)" }}>Interactive Tools</span>
             <h2 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>Loan Calculators</h2>
-            <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>Plan your loan with our interactive tools</p>
           </div>
           <div className="grid lg:grid-cols-2 gap-8">
             <EMICalculator title="Personal Loan EMI Calculator" defaultAmount={500000} minAmount={50000} maxAmount={2500000} defaultRate={12} defaultTenure={36} maxTenure={60} loanType="personal" />
@@ -102,7 +105,6 @@ export default function PersonalLoanPage() {
         </div>
       </section>
 
-      {/* Eligibility */}
       <section className="py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
@@ -141,13 +143,11 @@ export default function PersonalLoanPage() {
         </div>
       </section>
 
-      {/* How it Works */}
       <section className="py-14" style={{ background: "var(--bg-light)" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <span className="inline-block text-xs font-semibold tracking-widest uppercase px-4 py-1.5 rounded-full mb-3" style={{ background: "#d1fae5", color: "#059669" }}>Simple Process</span>
             <h2 className="text-3xl font-bold" style={{ color: "var(--text-primary)" }}>How It Works</h2>
-            <p className="text-sm mt-2" style={{ color: "var(--text-secondary)" }}>Get your loan in 4 simple steps</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((s, i) => (
@@ -156,9 +156,7 @@ export default function PersonalLoanPage() {
                   <div className="hidden lg:block absolute top-6 left-full w-full h-0.5 z-0" style={{ background: "var(--border)" }} />
                 )}
                 <div className="bg-white rounded-2xl border p-6 relative z-10" style={{ borderColor: "var(--border)" }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white mb-4" style={{ background: "var(--primary)" }}>
-                    {s.step}
-                  </div>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm text-white mb-4" style={{ background: "var(--primary)" }}>{s.step}</div>
                   <h3 className="font-semibold mb-2" style={{ color: "var(--text-primary)" }}>{s.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{s.desc}</p>
                 </div>
@@ -168,19 +166,11 @@ export default function PersonalLoanPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-14 px-4">
         <div className="max-w-4xl mx-auto relative rounded-3xl overflow-hidden" style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1a6fba 100%)" }}>
-          <div className="absolute -top-10 -right-10 w-52 h-52 rounded-full opacity-10" style={{ background: "white" }} />
-          <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full opacity-10" style={{ background: "white" }} />
           <div className="relative z-10 p-8 sm:p-12 text-center text-white">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-white/15 backdrop-blur">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
             <h3 className="text-2xl font-bold mb-2">Ready to Apply?</h3>
-            <p className="text-blue-100 text-sm mb-8 max-w-md mx-auto">
-              Apply online in minutes. Our team will get back to you within 2 business hours.
-            </p>
+            <p className="text-blue-100 text-sm mb-8 max-w-md mx-auto">Apply online in minutes. Our team will get back to you within 2 business hours.</p>
             <div className="flex justify-center gap-4 flex-wrap">
               <Link href="/register" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90" style={{ background: "var(--secondary)", color: "white" }}>
                 Apply for Personal Loan →

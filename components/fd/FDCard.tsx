@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { FDScheme } from "@/constants/fdSchemes";
+import type { FDScheme as FDSchemeDoc } from "@/lib/queries/useFDSchemes";
+
+export type { FDSchemeDoc };
 
 interface Props {
-  scheme: FDScheme;
+  scheme: FDSchemeDoc;
   selectedMonths?: number;
   isSenior?: boolean;
 }
@@ -15,7 +17,7 @@ const ratingColor: Record<string, string> = {
   A: "#f59e0b",
 };
 
-function getBestRate(scheme: FDScheme, months?: number, isSenior = false): { rate: number; label: string } {
+function getBestRate(scheme: FDSchemeDoc, months?: number, isSenior = false): { rate: number; label: string } {
   if (months) {
     const found = scheme.tenureRates.find(r => r.tenureMonths === months);
     if (found) return { rate: isSenior ? found.seniorRate : found.regularRate, label: found.tenureLabel };
@@ -29,6 +31,7 @@ function getBestRate(scheme: FDScheme, months?: number, isSenior = false): { rat
 export default function FDCard({ scheme, selectedMonths, isSenior = false }: Props) {
   const { rate, label } = getBestRate(scheme, selectedMonths, isSenior);
   const isHighlighted = scheme.tags.includes("Highest Rate") || scheme.tags.includes("Top Pick");
+  const href = `/fd/${scheme.slug ?? scheme.id ?? scheme._id}`;
 
   return (
     <div
@@ -44,25 +47,16 @@ export default function FDCard({ scheme, selectedMonths, isSenior = false }: Pro
       <div className="p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0"
-              style={{ background: "var(--primary)" }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0" style={{ background: "var(--primary)" }}>
               {scheme.bankName.charAt(0)}
             </div>
             <div>
-              <h3 className="font-semibold text-sm leading-snug" style={{ color: "var(--text-primary)" }}>
-                {scheme.bankName}
-              </h3>
+              <h3 className="font-semibold text-sm leading-snug" style={{ color: "var(--text-primary)" }}>{scheme.bankName}</h3>
               <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{scheme.bankType}</p>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{
-                color: ratingColor[scheme.rating] || "var(--text-secondary)",
-                background: `${ratingColor[scheme.rating]}18` || "#f3f4f6",
-              }}
-            >
+            <div className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: ratingColor[scheme.rating] || "var(--text-secondary)", background: `${ratingColor[scheme.rating] ?? "#6b7280"}18` }}>
               {scheme.rating} ({scheme.ratingAgency})
             </div>
           </div>
@@ -70,9 +64,7 @@ export default function FDCard({ scheme, selectedMonths, isSenior = false }: Pro
 
         <div className="flex items-end justify-between mb-4">
           <div>
-            <p className="text-xs mb-0.5" style={{ color: "var(--text-secondary)" }}>
-              {selectedMonths ? `Rate for ${label}` : "Best Rate"}
-            </p>
+            <p className="text-xs mb-0.5" style={{ color: "var(--text-secondary)" }}>{selectedMonths ? `Rate for ${label}` : "Best Rate"}</p>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl font-bold" style={{ color: "var(--success)" }}>{rate.toFixed(2)}</span>
               <span className="text-base font-medium" style={{ color: "var(--success)" }}>% p.a.</span>
@@ -81,22 +73,16 @@ export default function FDCard({ scheme, selectedMonths, isSenior = false }: Pro
           </div>
           <div className="text-right">
             <p className="text-xs mb-0.5" style={{ color: "var(--text-secondary)" }}>Min. Amount</p>
-            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              ₹{scheme.minAmount.toLocaleString("en-IN")}
-            </p>
+            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>₹{scheme.minAmount.toLocaleString("en-IN")}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-4">
           {scheme.tags.map(tag => (
-            <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#eff6ff", color: "#2563eb" }}>
-              {tag}
-            </span>
+            <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#eff6ff", color: "#2563eb" }}>{tag}</span>
           ))}
           {scheme.taxSaverFD && (
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#f0fdf4", color: "#16a34a" }}>
-              Tax Saver
-            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#f0fdf4", color: "#16a34a" }}>Tax Saver</span>
           )}
         </div>
 
@@ -113,11 +99,7 @@ export default function FDCard({ scheme, selectedMonths, isSenior = false }: Pro
           ))}
         </div>
 
-        <Link
-          href={`/fd/${scheme.id}`}
-          className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
-          style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}
-        >
+        <Link href={href} className="block w-full text-center text-sm font-semibold py-2.5 rounded-xl text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
           Invest Now
         </Link>
       </div>

@@ -1,7 +1,11 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { banks } from "@/constants/banks";
+import { useBanks } from "@/lib/queries/useBanks";
 
 export default function AdminBanksPage() {
+  const { data: banks = [], isLoading } = useBanks();
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -28,9 +32,17 @@ export default function AdminBanksPage() {
         ))}
       </div>
 
+      {isLoading && (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-52 rounded-2xl animate-pulse" style={{ background: "var(--bg-light)" }} />
+          ))}
+        </div>
+      )}
+
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {banks.map(bank => (
-          <div key={bank.id} className="bg-white rounded-2xl border shadow-sm p-5 card-hover" style={{ borderColor: "var(--border)" }}>
+          <div key={bank._id} className="bg-white rounded-2xl border shadow-sm p-5 card-hover" style={{ borderColor: "var(--border)" }}>
             <div className="flex items-start gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white text-base shrink-0" style={{ background: "var(--primary)" }}>
                 {bank.name.charAt(0)}
@@ -43,11 +55,10 @@ export default function AdminBanksPage() {
                 {bank.isActive ? "Active" : "Inactive"}
               </span>
             </div>
-
             <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
               {[
                 { label: "Rating", value: `${bank.rating} (${bank.ratingAgency})` },
-                { label: "Est.", value: bank.established },
+                { label: "Est.", value: String(bank.established) },
                 { label: "HQ", value: bank.hq },
               ].map(({ label, value }) => (
                 <div key={label} className="p-2 rounded-lg" style={{ background: "var(--bg-light)" }}>
@@ -56,14 +67,10 @@ export default function AdminBanksPage() {
                 </div>
               ))}
             </div>
-
             <p className="text-xs leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>{bank.description}</p>
-
             <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>
-                Edit
-              </Button>
-              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50 transition-colors" style={{ borderColor: "var(--border)", color: bank.isActive ? "var(--danger)" : "var(--success)" }}>
+              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: "var(--primary)" }}>Edit</Button>
+              <Button type="button" variant="outline" className="flex-1 text-xs font-semibold py-2 rounded-lg border hover:bg-gray-50" style={{ borderColor: "var(--border)", color: bank.isActive ? "var(--danger)" : "var(--success)" }}>
                 {bank.isActive ? "Disable" : "Enable"}
               </Button>
             </div>

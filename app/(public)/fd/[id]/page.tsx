@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { Check, X } from "lucide-react";
 import { notFound } from "next/navigation";
-import { fdSchemes } from "@/constants/fdSchemes";
+import { connectDB } from "@/lib/mongodb";
+import FDSchemeModel from "@/lib/models/FDScheme";
 import FDCalculator from "@/components/fd/FDCalculator";
-
-export function generateStaticParams() {
-  return fdSchemes.map(s => ({ id: s.id }));
-}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,12 +11,30 @@ interface Props {
 
 export default async function FDDetailPage({ params }: Props) {
   const { id } = await params;
-  const scheme = fdSchemes.find(s => s.id === id);
-  if (!scheme) notFound();
+  await connectDB();
+  const raw = await FDSchemeModel.findOne({ slug: id, isActive: true }).lean();
+  if (!raw) notFound();
+
+  const scheme = JSON.parse(JSON.stringify(raw)) as {
+    _id: string;
+    slug: string;
+    bankName: string;
+    bankType: string;
+    schemeName: string;
+    rating: string;
+    ratingAgency: string;
+    tags: string[];
+    minAmount: number;
+    compoundingFrequency: string;
+    prematureWithdrawal: boolean;
+    loanAgainstFD: boolean;
+    autoRenewal: boolean;
+    taxSaverFD: boolean;
+    tenureRates: Array<{ tenureMonths: number; tenureLabel: string; regularRate: number; seniorRate: number }>;
+  };
 
   return (
     <div style={{ background: "var(--bg-light)", minHeight: "100vh" }}>
-      {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav className="text-sm" style={{ color: "var(--text-secondary)" }}>
           <Link href="/" className="hover:underline">Home</Link>
@@ -33,7 +48,6 @@ export default async function FDDetailPage({ params }: Props) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="flex gap-8 items-start">
           <div className="flex-1 min-w-0 space-y-6">
-            {/* Header Card */}
             <div className="bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: "var(--border)" }}>
               <div className="flex items-start gap-4 mb-5">
                 <div className="w-14 h-14 rounded-xl flex items-center justify-center font-bold text-white text-lg shrink-0" style={{ background: "var(--primary)" }}>
@@ -68,7 +82,6 @@ export default async function FDDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Interest Rate Table */}
             <div className="bg-white rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)" }}>
               <div className="px-6 py-4 border-b" style={{ borderColor: "var(--border)" }}>
                 <h2 className="font-semibold" style={{ color: "var(--text-primary)" }}>Interest Rates by Tenure</h2>
@@ -105,7 +118,6 @@ export default async function FDDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Features */}
             <div className="bg-white rounded-2xl border p-6 shadow-sm" style={{ borderColor: "var(--border)" }}>
               <h2 className="font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Scheme Features</h2>
               <div className="grid sm:grid-cols-2 gap-3">
@@ -116,7 +128,7 @@ export default async function FDDetailPage({ params }: Props) {
                   { label: "Tax Saver (80C)", value: scheme.taxSaverFD },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "var(--bg-light)" }}>
-                        <span className="text-lg">{value ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />}</span>
+                    <span>{value ? <Check className="w-5 h-5 text-green-500" /> : <X className="w-5 h-5 text-red-500" />}</span>
                     <span className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{label}</span>
                   </div>
                 ))}

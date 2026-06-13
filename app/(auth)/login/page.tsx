@@ -10,53 +10,30 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { AlertCircle, Loader2 } from "lucide-react";
-
-const DUMMY_USERS = [
-  { email: "admin@vfspl.in", password: "admin123", role: "admin", name: "Admin User" },
-  { email: "user@vfspl.in", password: "user123", role: "user", name: "Demo User" },
-  { email: "anjali@example.com", password: "user123", role: "user", name: "Anjali Sharma" },
-];
-
-function setCookie(name: string, value: string, days = 1) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
-}
+import { useAuthStore } from "@/lib/store/authStore";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "";
 
+  const { login, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit: React.ComponentProps<"form">["onSubmit"] = async (e) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-
-    await new Promise(r => setTimeout(r, 600));
-
-    const match = DUMMY_USERS.find(
-      u => u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-
-    if (!match) {
-      setError("Invalid email or password. Please try again.");
-      setLoading(false);
+    const result = await login(email, password);
+    if (result.error) {
+      setError(result.error);
       return;
     }
-
-    setCookie("vf_auth", "1");
-    setCookie("vf_role", match.role);
-    setCookie("vf_user_email", match.email);
-    setCookie("vf_user_name", match.name);
-
+    const role = useAuthStore.getState().user?.role;
     if (redirectTo) {
       router.push(redirectTo);
-    } else if (match.role === "admin") {
+    } else if (role === "admin") {
       router.push("/admin");
     } else {
       router.push("/dashboard");
@@ -112,12 +89,12 @@ function LoginForm() {
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isLoading}
               className="w-full text-white"
               style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}
             >
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {loading ? "Signing in..." : "Sign In"}
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 
@@ -130,16 +107,15 @@ function LoginForm() {
             </Link>
           </p>
 
-          {/* Demo credentials */}
           <div className="mt-5 rounded-xl p-4 text-xs space-y-1.5 bg-blue-50">
             <p className="font-semibold mb-2 text-blue-800">Demo Credentials</p>
             <div className="flex justify-between">
               <span className="text-gray-700">Admin:</span>
-              <span className="font-mono text-blue-700">admin@vfspl.in / admin123</span>
+              <span className="font-mono text-blue-700">admin@vfspl.in / Admin@123</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-700">User:</span>
-              <span className="font-mono text-blue-700">user@vfspl.in / user123</span>
+              <span className="font-mono text-blue-700">anjali@example.com / User@1234</span>
             </div>
           </div>
         </CardContent>

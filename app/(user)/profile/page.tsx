@@ -1,18 +1,12 @@
-import { currentUser } from "@/constants/users";
+"use client";
+
+import { useAuthStore } from "@/lib/store/authStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Circle, KeyRound, ShieldCheck, Smartphone, ChevronRight } from "lucide-react";
-
-const kycSteps = [
-  { step: 1, label: "Email Verified", done: true },
-  { step: 2, label: "Mobile OTP Verified", done: true },
-  { step: 3, label: "PAN Card Uploaded", done: !!currentUser.panNumber },
-  { step: 4, label: "Aadhaar Verified", done: !!currentUser.aadharNumber },
-  { step: 5, label: "Bank Account Linked", done: false },
-];
 
 const securityItems = [
   { label: "Change Password", Icon: KeyRound },
@@ -21,15 +15,32 @@ const securityItems = [
 ];
 
 export default function ProfilePage() {
+  const { user } = useAuthStore();
+
+  const kycSteps = [
+    { step: 1, label: "Email Verified", done: true },
+    { step: 2, label: "Mobile OTP Verified", done: !!user?.phone },
+    { step: 3, label: "PAN Card Uploaded", done: !!user?.panNumber },
+    { step: 4, label: "Aadhaar Verified", done: !!user?.aadharNumber },
+    { step: 5, label: "Bank Account Linked", done: false },
+  ];
+
   const kycComplete = kycSteps.filter(s => s.done).length;
   const kycPercent = Math.round((kycComplete / kycSteps.length) * 100);
+
+  if (!user) {
+    return (
+      <div className="p-12 text-center">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-8" style={{ color: "var(--text-primary)" }}>Profile & KYC</h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Profile Card */}
         <Card>
           <CardContent className="p-6">
             <div className="text-center mb-5">
@@ -37,15 +48,15 @@ export default function ProfilePage() {
                 className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3"
                 style={{ background: "var(--primary)" }}
               >
-                {currentUser.name.charAt(0)}
+                {user.name?.charAt(0) ?? "U"}
               </div>
-              <h2 className="font-semibold text-lg" style={{ color: "var(--text-primary)" }}>{currentUser.name}</h2>
-              <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+              <h2 className="font-semibold text-lg" style={{ color: "var(--text-primary)" }}>{user.name}</h2>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
               <Badge
-                variant={currentUser.isSeniorCitizen ? "secondary" : "outline"}
+                variant={user.isSeniorCitizen ? "secondary" : "outline"}
                 className="mt-2"
               >
-                {currentUser.isSeniorCitizen ? "Senior Citizen" : "Regular Investor"}
+                {user.isSeniorCitizen ? "Senior Citizen" : "Regular Investor"}
               </Badge>
             </div>
 
@@ -53,14 +64,13 @@ export default function ProfilePage() {
 
             <div className="space-y-2 text-sm">
               {[
-                { label: "Phone", value: currentUser.phone },
-                { label: "City", value: currentUser.city ?? "—" },
-                { label: "State", value: currentUser.state ?? "—" },
-                { label: "Member Since", value: currentUser.createdAt },
+                { label: "Phone", value: user.phone ?? "—" },
+                { label: "Status", value: user.status ?? "active" },
+                { label: "Role", value: user.role ?? "user" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-1.5">
                   <span className="text-muted-foreground">{label}</span>
-                  <span className="font-medium">{value}</span>
+                  <span className="font-medium capitalize">{value}</span>
                 </div>
               ))}
             </div>
@@ -71,13 +81,12 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* KYC + Security */}
         <div className="lg:col-span-2 space-y-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
               <CardTitle className="text-base font-semibold">KYC Status</CardTitle>
-              <Badge variant={currentUser.kycStatus === "verified" ? "default" : "secondary"}>
-                {currentUser.kycStatus === "verified" ? "Verified" : "Pending"}
+              <Badge variant={user.kycStatus === "verified" ? "default" : "secondary"}>
+                {user.kycStatus === "verified" ? "Verified" : "Pending"}
               </Badge>
             </CardHeader>
             <CardContent className="pt-5">
