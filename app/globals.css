@@ -1,26 +1,552 @@
 @import "tailwindcss";
 
+/* ─── Brand Tokens ─────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #0f4c81;
+  --primary-dark: #0a3460;
+  --primary-light: #1e6bb5;
+  --secondary: #c8922a;
+  --secondary-light: #e4a830;
+  --secondary-dark: #a87320;
+  --secondary-bg: #fdf6e7;
+  --secondary-border: #f0d078;
+  --accent: #c8922a;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --bg-light: #f8fafc;
+
+  /* shadcn / Radix CSS variables (slate base) */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary-shadcn: 215 65% 28%;
+  --primary-foreground: 210 40% 98%;
+  --secondary-shadcn: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent-shadcn: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 215 65% 28%;
+  --radius: 0.75rem;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+  /* Chart palette */
+  --chart-1: 215 65% 28%;
+  --chart-2: 262 60% 55%;
+  --chart-3: 160 60% 35%;
+  --chart-4: 32 60% 38%;
+  --chart-5: 0 70% 55%;
+  --border-shadcn: 214.3 31.8% 91.4%;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border-shadcn));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary-shadcn));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary-shadcn));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent-shadcn));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  /* font-size scaling is set in the typography section above */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text-primary);
+  background: #ffffff;
+  animation: fade-in 0.28s ease both;
+}
+
+main > * {
+  animation: fade-up 0.5s ease both;
+}
+
+main > *:nth-child(1) { animation-delay: 0.04s; }
+main > *:nth-child(2) { animation-delay: 0.10s; }
+main > *:nth-child(3) { animation-delay: 0.16s; }
+main > *:nth-child(4) { animation-delay: 0.22s; }
+main > *:nth-child(5) { animation-delay: 0.28s; }
+main > *:nth-child(6) { animation-delay: 0.34s; }
+main > *:nth-child(7) { animation-delay: 0.40s; }
+main > *:nth-child(8) { animation-delay: 0.46s; }
+
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > * {
+  animation: scale-in 0.42s ease both;
+}
+
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(1) { animation-delay: 0.05s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(2) { animation-delay: 0.10s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(3) { animation-delay: 0.15s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(4) { animation-delay: 0.20s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(5) { animation-delay: 0.25s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(6) { animation-delay: 0.30s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(7) { animation-delay: 0.35s; }
+main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > *:nth-child(8) { animation-delay: 0.40s; }
+
+/* Shared motion for shadcn-style primitives and common controls */
+:where(
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  summary,
+  [role="button"],
+  [role="tab"],
+  [data-slot],
+  .card-hover,
+  .hover-lift,
+  .sticky-header,
+  .gold-badge,
+  .rate-badge,
+  .btn-secondary,
+  .glass,
+  .gradient-border,
+  .sheet-content,
+  .dialog-content,
+  .dropdown-menu-content,
+  .popover-content,
+  .tooltip-content,
+  .select-content,
+  .accordion-content
+) {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:where(button, [role="button"], [role="tab"], a) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(button:hover, [role="button"]:hover, [role="tab"]:hover, a:hover) {
+  transform: translateY(-1px);
+}
+
+:where(button:active, [role="button"]:active, [role="tab"]:active, a:active) {
+  transform: translateY(0);
+}
+
+/* ─── Responsive Typography Scale ──────────────────────────── */
+/*
+  fluid-type() pattern — each step clamps between a mobile floor
+  and a desktop ceiling so text scales smoothly between 320px and 1280px
+  without per-component media queries.
+
+  Usage in JSX:  className="text-display"  → hero headlines
+                 className="text-h1"        → page titles
+                 className="text-h2"        → section headings
+                 className="text-h3"        → card / sub-headings
+                 className="text-body-lg"   → large body copy
+                 className="text-body"      → default body
+                 className="text-body-sm"   → captions / helper text
+                 className="text-label"     → uppercase labels / badges
+*/
+
+/* Display — e.g. hero h1 on home page */
+.text-display {
+  font-size: clamp(1.25rem, 4.5vw, 3.5rem);   /* 20px → 56px */
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* H1 — page-level title */
+.text-h1 {
+  font-size: clamp(1.125rem, 3.5vw, 3rem);     /* 18px → 48px */
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* H2 — section heading */
+.text-h2 {
+  font-size: clamp(1rem, 2.5vw, 2.25rem);      /* 16px → 36px */
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+/* H3 — card / sub-section heading */
+.text-h3 {
+  font-size: clamp(0.875rem, 1.75vw, 1.5rem);  /* 14px → 24px */
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+/* Body large */
+.text-body-lg {
+  font-size: clamp(0.8125rem, 1.25vw, 1.125rem); /* 13px → 18px */
+  line-height: 1.65;
+}
+
+/* Body default */
+.text-body {
+  font-size: clamp(0.75rem, 1vw, 1rem);          /* 12px → 16px */
+  line-height: 1.6;
+}
+
+/* Body small / captions */
+.text-body-sm {
+  font-size: clamp(0.6875rem, 0.85vw, 0.875rem); /* 11px → 14px */
+  line-height: 1.55;
+}
+
+/* Label / badge / eyebrow */
+.text-label {
+  font-size: clamp(0.5625rem, 0.7vw, 0.75rem);   /* 9px → 12px */
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ─── Global base font size — scales the whole rem tree ─────── */
+html {
+  /* 12px on phones → 16px at 1280px+ */
+  font-size: clamp(12px, 0.75rem + 0.5vw, 16px);
+}
+
+/* Tighten padding / spacing on small screens */
+@media (max-width: 640px) {
+  /* Hero sections */
+  .gradient-hero {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  /* Section vertical rhythm */
+  section {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  /* Decorative circles in hero — shrink so they don't blow out layout */
+  .hero-circle-lg { width: 14rem; height: 14rem; }
+  .hero-circle-sm { width: 10rem; height: 10rem; }
+
+  /* Cards — reduce inner padding */
+  .card-sm-tight { padding: 1rem; }
+
+  /* Stats strip — tighter */
+  .stats-strip { gap: 0.75rem; }
+}
+
+/* ─── Gradients ─────────────────────────────────────────────── */
+.gradient-hero {
+  background: linear-gradient(135deg, #0a3460 0%, #0f4c81 60%, #0f4c81 100%);
+}
+
+.gradient-gold {
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+}
+
+/* ─── Utility Classes ───────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.10);
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--border);
+}
+
+.sticky-header,
+.glass,
+.gradient-border,
+.btn-secondary,
+.gold-badge,
+.rate-badge {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.gold-badge {
+  background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+  color: #fff;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.gold-highlight { color: var(--secondary); font-weight: 700; }
+
+.rate-badge {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+  color: #fff;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+.btn-secondary:hover { opacity: 0.88; }
+
+:where(button, a, input, textarea, select, summary, [role="button"], [role="tab"], [data-slot]) svg {
+  transition: transform 180ms ease, color 180ms ease, fill 180ms ease, stroke 180ms ease;
+}
+
+:where(button:hover, a:hover, [role="button"]:hover, [role="tab"]:hover) svg {
+  transform: translateX(1px);
+}
+
+input[type="range"] { accent-color: var(--primary); }
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Keyframe Animations ───────────────────────────────────── */
+
+/* Fade in upward */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in downward */
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade in */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slide in from left */
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide in from right */
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Scale in (pop) */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Float (infinite subtle hover) */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Pulse glow */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(15, 76, 129, 0.25); }
+  50%       { box-shadow: 0 0 0 10px rgba(15, 76, 129, 0); }
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Bounce dot (loading indicator) */
+@keyframes bounce-dot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+
+/* Count up number */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Spin smooth */
+@keyframes spin-smooth {
+  to { transform: rotate(360deg); }
+}
+
+/* Accordion open */
+@keyframes accordion-down {
+  from { height: 0; opacity: 0; }
+  to   { height: var(--radix-accordion-content-height); opacity: 1; }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); opacity: 1; }
+  to   { height: 0; opacity: 0; }
+}
+
+/* Progress fill */
+@keyframes progress-fill {
+  from { width: 0%; }
+  to   { width: var(--progress-value, 100%); }
+}
+
+/* Typewriter blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ─── Animation Utility Classes ─────────────────────────────── */
+.animate-fade-up          { animation: fade-up       0.45s ease both; }
+.animate-fade-down        { animation: fade-down     0.35s ease both; }
+.animate-fade-in          { animation: fade-in       0.4s  ease both; }
+.animate-slide-left       { animation: slide-in-left 0.4s  ease both; }
+.animate-slide-right      { animation: slide-in-right 0.4s ease both; }
+.animate-scale-in         { animation: scale-in      0.3s  ease both; }
+.animate-float            { animation: float         3s ease-in-out infinite; }
+.animate-pulse-glow       { animation: pulse-glow    2s ease-in-out infinite; }
+.animate-shimmer          { animation: shimmer       1.6s linear infinite; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; }
+.animate-spin-smooth      { animation: spin-smooth   0.8s linear infinite; }
+.animate-count-up         { animation: count-up      0.5s ease both; }
+.animate-accordion-down   { animation: accordion-down 0.22s ease; }
+.animate-accordion-up     { animation: accordion-up   0.2s  ease; }
+.animate-blink            { animation: blink         1.2s step-end infinite; }
+
+/* Stagger delays for list items */
+.stagger-1  { animation-delay: 0.05s; }
+.stagger-2  { animation-delay: 0.10s; }
+.stagger-3  { animation-delay: 0.15s; }
+.stagger-4  { animation-delay: 0.20s; }
+.stagger-5  { animation-delay: 0.25s; }
+.stagger-6  { animation-delay: 0.30s; }
+.stagger-7  { animation-delay: 0.35s; }
+.stagger-8  { animation-delay: 0.40s; }
+
+/* Bounce dots (loading) */
+.bounce-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: bounce-dot 1.4s ease-in-out infinite;
+}
+.bounce-dot:nth-child(2) { animation-delay: 0.16s; }
+.bounce-dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* Hero text gradient animation */
+@keyframes text-shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.text-gradient-animate {
+  background: linear-gradient(90deg, var(--secondary-light), #fff, var(--secondary-light));
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 3s linear infinite;
+}
+
+/* Hover lift */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient border */
+.gradient-border {
+  position: relative;
+  background: white;
+  border-radius: 1rem;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  z-index: -1;
+}
+
+/* Page transition wrapper */
+.page-enter {
+  animation: fade-up 0.4s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  body,
+  main > *,
+  main :where(.grid, .grid-cols-1, .grid-cols-2, .grid-cols-3, .grid-cols-4, .grid-cols-5, .grid-cols-6) > * {
+    animation: none !important;
+  }
 }
