@@ -79,6 +79,7 @@ const investmentProducts = [
 const companyLinks = [
   { label: "Investor Relations", href: "/investor-relations", Icon: TrendingUp },
   { label: "News & Media",       href: "/news-media",         Icon: Newspaper },
+  { label: "Partner With Us",    href: "/partner",            Icon: ArrowRight },
   { label: "Careers",            href: "/careers",            Icon: Briefcase },
   { label: "FAQ",                href: "/faq",                Icon: HelpCircle },
   { label: "About Us",           href: "/about",              Icon: Info },

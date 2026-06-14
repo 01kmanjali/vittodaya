@@ -12,7 +12,7 @@ import {
   LayoutDashboard, BarChart2, User, Factory, Car, Home, FileText,
   LayoutGrid, Building2, Newspaper, HelpCircle, TrendingUp, Users,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe, Settings,
-  UserCog, ShieldCheck, PackageOpen,
+  UserCog, ShieldCheck, PackageOpen, HandshakeIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hasPageAccess, ROLE_LABELS, ROLE_COLORS } from "@/lib/permissions";
@@ -66,6 +66,12 @@ const navSections: NavSection[] = [
     section: "Finance",
     items: [
       { label: "Investor Relations", href: "/admin/investor-relations", Icon: TrendingUp, page: "investor-relations" },
+    ],
+  },
+  {
+    section: "Partners",
+    items: [
+      { label: "Partner Inquiries", href: "/admin/partners", Icon: HandshakeIcon, page: "partners" },
     ],
   },
   {

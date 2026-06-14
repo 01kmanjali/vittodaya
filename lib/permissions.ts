@@ -49,6 +49,7 @@ export const PAGE_ACCESS: Record<string, AdminRole[]> = {
   "investor-relations": ["super-admin", "admin", "operation-admin", "auditor"],
   "config":             ["super-admin", "admin"],
   "accounts":           ["super-admin", "admin"],
+  "partners":           ["super-admin", "admin", "support-admin", "operation-admin", "auditor"],
 };
 
 // Pages and which admin roles can WRITE (create/edit/delete)
@@ -63,6 +64,7 @@ export const WRITE_ACCESS: Record<string, AdminRole[]> = {
   "investor-relations": ["super-admin", "admin", "operation-admin"],
   "config":             ["super-admin", "admin"],
   "accounts":           ["super-admin", "admin"],
+  "partners":           ["super-admin", "admin", "support-admin", "operation-admin"],
 };
 
 export function isAdminRole(role: string | undefined | null): boolean {

@@ -233,11 +233,11 @@ export default async function HomePage() {
                     <Card className="hover-lift group overflow-hidden border-0 shadow-sm h-full">
                       {p.image && (
                         <div className="relative h-44 overflow-hidden">
-                          <Image
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={p.image}
                             alt={p.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                         </div>
@@ -640,9 +640,11 @@ export default async function HomePage() {
               <Button asChild size="lg" className="text-white shadow-lg" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
                 <Link href="/applications">Apply for a Loan</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-blue-800 text-blue-800 hover:bg-blue-50">
-                <Link href="/fd">Explore FD Rates</Link>
-              </Button>
+              {fdEnabled && (
+                <Button asChild size="lg" variant="outline" className="border-blue-800 text-blue-800 hover:bg-blue-50">
+                  <Link href="/fd">Explore FD Rates</Link>
+                </Button>
+              )}
             </div>
           </FadeUp>
         </section>

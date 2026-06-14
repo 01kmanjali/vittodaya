@@ -1,141 +1,346 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { useFAQs, useCreateFAQ, useDeleteFAQ } from "@/lib/queries/useFAQs";
-import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useFAQs, useCreateFAQ, useDeleteFAQ, type FAQ } from "@/lib/queries/useFAQs";
 import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
+import { toast } from "sonner";
+import { Plus, Pencil, Trash2, Search, HelpCircle, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+
+// ─── Update mutation (PUT /api/faqs/:id) ─────────────────────────────────────
+
+async function updateFAQ({ id, ...body }: Partial<FAQ> & { id: string }) {
+  const res = await fetch(`/api/faqs/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to update FAQ");
+  return data.faq as FAQ;
+}
+
+const EMPTY = { category: "", question: "", answer: "" };
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
+  "fixed-deposits": { bg: "#ecfdf5", text: "#059669" },
+  "loans":          { bg: "#eff6ff", text: "#1d4ed8" },
+  "lap":            { bg: "#fff7ed", text: "#b45309" },
+  "general":        { bg: "#f5f3ff", text: "#7c3aed" },
+};
+
+function categoryStyle(cat: string) {
+  return CATEGORY_COLORS[cat.toLowerCase()] ?? { bg: "#f1f5f9", text: "#475569" };
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminFAQsPage() {
   const { canView, canWrite } = usePageRole("faqs");
   const { data: faqs = [], isLoading } = useFAQs();
   const createFAQ = useCreateFAQ();
   const deleteFAQ = useDeleteFAQ();
+  const qc = useQueryClient();
+
+  const updateMut = useMutation({
+    mutationFn: updateFAQ,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["faqs"] }); toast.success("FAQ updated."); },
+    onError: () => toast.error("Failed to update FAQ."),
+  });
 
   const [activeCategory, setActiveCategory] = useState("all");
-  const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ category: "", question: "", answer: "" });
+  const [search, setSearch]                 = useState("");
+  const [expanded, setExpanded]             = useState<string | null>(null);
+
+  // Dialog state
+  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [editTarget, setEditTarget]     = useState<FAQ | null>(null);
+  const [form, setForm]                 = useState(EMPTY);
+
+  // Delete dialog
+  const [delTarget, setDelTarget]       = useState<FAQ | null>(null);
 
   const categories = Array.from(new Set(faqs.map(f => f.category)));
+
   const filtered = faqs.filter(f => {
-    const matchCat = activeCategory === "all" || f.category === activeCategory;
-    const matchSearch = !search || f.question.toLowerCase().includes(search.toLowerCase());
+    const matchCat    = activeCategory === "all" || f.category === activeCategory;
+    const matchSearch = !search || f.question.toLowerCase().includes(search.toLowerCase()) || f.answer.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
 
+  function openCreate() {
+    setEditTarget(null);
+    setForm(EMPTY);
+    setDialogOpen(true);
+  }
+
+  function openEdit(faq: FAQ) {
+    setEditTarget(faq);
+    setForm({ category: faq.category, question: faq.question, answer: faq.answer });
+    setDialogOpen(true);
+  }
+
   async function handleSave() {
-    if (!form.category || !form.question || !form.answer) {
-      toast.error("Please fill in all fields.");
+    if (!form.category.trim() || !form.question.trim() || !form.answer.trim()) {
+      toast.error("All fields are required.");
       return;
     }
     try {
-      await createFAQ.mutateAsync(form);
-      setForm({ category: "", question: "", answer: "" });
-      setShowForm(false);
-      toast.success("FAQ created successfully.");
+      if (editTarget) {
+        await updateMut.mutateAsync({ id: editTarget._id, ...form });
+      } else {
+        await createFAQ.mutateAsync(form);
+        toast.success("FAQ created.");
+      }
+      setDialogOpen(false);
     } catch {
-      toast.error("Failed to create FAQ.");
+      toast.error("Something went wrong.");
     }
   }
 
+  function handleDelete(faq: FAQ) {
+    setDelTarget(faq);
+  }
+
+  function confirmDelete() {
+    if (!delTarget) return;
+    deleteFAQ.mutate(delTarget._id, {
+      onSuccess: () => { toast.success("FAQ deleted."); setDelTarget(null); },
+      onError:   () => toast.error("Failed to delete FAQ."),
+    });
+  }
+
+  const busy = createFAQ.isPending || updateMut.isPending;
+
   if (!canView) return <AccessDenied page="FAQs" />;
+
   return (
-    <div>
+    <div className=" mx-auto">
       {!canWrite && <ReadOnlyBanner />}
+
+      {/* ── Header ── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>FAQ Management</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{faqs.length} FAQs across {categories.length} categories</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            {faqs.length} FAQs across {categories.length} {categories.length === 1 ? "category" : "categories"}
+          </p>
         </div>
-        <Button type="button" variant="gold" size="md" disabled={!canWrite} onClick={() => setShowForm(!showForm)}>
-          + Add FAQ
-        </Button>
+        {canWrite && (
+          <Button
+            onClick={openCreate}
+            className="gap-2 text-white"
+            style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%)" }}
+          >
+            <Plus className="h-4 w-4" /> Add FAQ
+          </Button>
+        )}
       </div>
 
-      {showForm && (
-        <div className="bg-white rounded-2xl border shadow-sm p-6 mb-6" style={{ borderColor: "var(--border)" }}>
-          <h2 className="font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Add New FAQ</h2>
-          <div className="grid gap-4">
-            <div>
-              <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Category</label>
-              <input
-                type="text"
-                placeholder="e.g. fixed-deposits"
-                value={form.category}
-                onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none"
+      {/* ── Search + Filter bar ── */}
+      <div className="bg-white rounded-2xl border p-4 mb-5 space-y-3 shadow-sm" style={{ borderColor: "var(--border)" }}>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search questions or answers…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(["all", ...categories] as string[]).map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors capitalize ${
+                activeCategory === cat
+                  ? "text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+              style={activeCategory === cat ? { background: "var(--primary)" } : {}}
+            >
+              {cat === "all" ? `All (${faqs.length})` : `${cat} (${faqs.filter(f => f.category === cat).length})`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FAQ List ── */}
+      {isLoading ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)" }}>
+          <HelpCircle className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+          <p className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
+            {search ? `No FAQs matching "${search}"` : 'No FAQs yet. Click Add FAQ to get started.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((faq, idx) => {
+            const style = categoryStyle(faq.category);
+            const isOpen = expanded === faq._id;
+            return (
+              <div
+                key={faq._id}
+                className="bg-white rounded-2xl border shadow-sm overflow-hidden transition-shadow hover:shadow-md"
                 style={{ borderColor: "var(--border)" }}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Question</label>
-              <input
-                type="text"
-                placeholder="Enter FAQ question..."
-                value={form.question}
-                onChange={e => setForm(p => ({ ...p, question: e.target.value }))}
-                className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none"
-                style={{ borderColor: "var(--border)" }}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium mb-1 block" style={{ color: "var(--text-secondary)" }}>Answer</label>
-              <textarea
-                rows={4}
-                placeholder="Enter detailed answer..."
-                value={form.answer}
-                onChange={e => setForm(p => ({ ...p, answer: e.target.value }))}
-                className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none resize-none"
-                style={{ borderColor: "var(--border)" }}
-              />
-            </div>
-            <div className="flex gap-3">
-              <Button type="button" variant="primary" size="md" onClick={handleSave} disabled={createFAQ.isPending}>
-                {createFAQ.isPending ? "Saving…" : "Save FAQ"}
-              </Button>
-              <Button type="button" variant="neutral" size="md" onClick={() => setShowForm(false)}>Cancel</Button>
-            </div>
-          </div>
+              >
+                {/* Row header */}
+                <div className="flex items-center gap-3 px-5 py-4">
+                  {/* Index */}
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 text-white" style={{ background: "var(--primary)" }}>
+                    {idx + 1}
+                  </span>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span
+                        className="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize"
+                        style={{ background: style.bg, color: style.text }}
+                      >
+                        {faq.category}
+                      </span>
+                    </div>
+                    <p className="text-sm font-semibold leading-snug" style={{ color: "var(--text-primary)" }}>
+                      {faq.question}
+                    </p>
+                    {!isOpen && (
+                      <p className="text-xs mt-0.5 line-clamp-1" style={{ color: "var(--text-secondary)" }}>
+                        {faq.answer}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {canWrite && (
+                      <>
+                        <Button
+                          size="icon" variant="ghost"
+                          className="h-8 w-8 text-blue-600 hover:bg-blue-50"
+                          onClick={() => openEdit(faq)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon" variant="ghost"
+                          className="h-8 w-8 text-red-500 hover:bg-red-50"
+                          onClick={() => handleDelete(faq)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      size="icon" variant="ghost"
+                      className="h-8 w-8"
+                      onClick={() => setExpanded(isOpen ? null : faq._id)}
+                    >
+                      {isOpen
+                        ? <ChevronUp className="h-4 w-4" />
+                        : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Expanded answer */}
+                {isOpen && (
+                  <div
+                    className="px-5 pb-4 pt-0 border-t text-sm leading-relaxed"
+                    style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}
+                  >
+                    <div className="pt-3">{faq.answer}</div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border shadow-sm p-4 mb-5 flex flex-wrap gap-3" style={{ borderColor: "var(--border)" }}>
-        <input type="text" placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="border rounded-xl px-4 py-2 text-sm outline-none flex-1 min-w-48" style={{ borderColor: "var(--border)" }} />
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" variant={activeCategory === "all" ? "primary" : "neutral"} className="rounded-full" onClick={() => setActiveCategory("all")}>All</Button>
-          {categories.map(cat => (
-            <Button type="button" key={cat} size="sm" variant={activeCategory === cat ? "primary" : "neutral"} className="rounded-full capitalize" onClick={() => setActiveCategory(cat)}>
-              {cat}
-            </Button>
-          ))}
-        </div>
-      </div>
+      {/* ── Add / Edit Dialog ── */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editTarget ? "Edit FAQ" : "Add New FAQ"}</DialogTitle>
+          </DialogHeader>
 
-      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden" style={{ borderColor: "var(--border)" }}>
-        <div className="px-5 py-3 border-b text-sm" style={{ borderColor: "var(--border)", color: "var(--text-secondary)" }}>
-          {isLoading ? "Loading…" : <><strong>{filtered.length}</strong> FAQs</>}
-        </div>
-        <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-          {filtered.map(faq => (
-            <div key={faq._id} className="px-5 py-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded-full capitalize font-medium" style={{ background: "#eff6ff", color: "#1d4ed8" }}>{faq.category}</span>
-                  </div>
-                  <p className="font-medium text-sm mb-1" style={{ color: "var(--text-primary)" }}>{faq.question}</p>
-                  <p className="text-xs line-clamp-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>{faq.answer}</p>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
-                  <Button type="button" variant="dangerOutline" size="sm" onClick={() => { deleteFAQ.mutate(faq._id, { onSuccess: () => toast.success("FAQ deleted."), onError: () => toast.error("Failed to delete FAQ.") }); }} disabled={deleteFAQ.isPending}>Delete</Button>
-                </div>
-              </div>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-semibold mb-1.5 block">Category *</Label>
+              <Input
+                placeholder="e.g. loans, fixed-deposits, general"
+                value={form.category}
+                onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
+              />
             </div>
-          ))}
-        </div>
-      </div>
+            <div>
+              <Label className="text-xs font-semibold mb-1.5 block">Question *</Label>
+              <Input
+                placeholder="Enter the FAQ question…"
+                value={form.question}
+                onChange={e => setForm(p => ({ ...p, question: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold mb-1.5 block">Answer *</Label>
+              <Textarea
+                rows={5}
+                placeholder="Enter a clear, detailed answer…"
+                value={form.answer}
+                onChange={e => setForm(p => ({ ...p, answer: e.target.value }))}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleSave}
+              disabled={busy}
+              className="text-white"
+              style={{ background: "linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%)" }}
+            >
+              {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {editTarget ? "Save Changes" : "Create FAQ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Delete Confirm Dialog ── */}
+      <Dialog open={!!delTarget} onOpenChange={(open: boolean) => { if (!open) setDelTarget(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete FAQ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+            This will permanently delete:{" "}
+            <span className="font-medium" style={{ color: "var(--text-primary)" }}>&quot;{delTarget?.question}&quot;</span>
+          </p>
+          <DialogFooter className="mt-2">
+            <Button variant="outline" onClick={() => setDelTarget(null)}>Cancel</Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={confirmDelete}
+              disabled={deleteFAQ.isPending}
+            >
+              {deleteFAQ.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

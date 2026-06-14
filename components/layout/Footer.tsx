@@ -26,6 +26,7 @@ const footerSections = [
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
+      { label: "Partner With Us", href: "/partner" },
       { label: "Careers", href: "/careers" },
       { label: "Investor Relations", href: "/investor-relations" },
       { label: "News & Media", href: "/news-media" },
@@ -82,7 +83,7 @@ export default function Footer() {
         <Separator className="my-8 bg-blue-800" />
 
         <div className="flex flex-col sm:flex-row justify-between items-start gap-3">
-          <p className="text-xs text-blue-400">© 2025 Vittodaya Financial Services Pvt. Ltd. All rights reserved.</p>
+          <p className="text-xs text-blue-400">© {new Date().getFullYear()} Vittodaya Financial Services Pvt. Ltd. All rights reserved.</p>
           <p className="text-xs text-blue-500 sm:text-right max-w-sm">
             Loans are subject to credit assessment. Fixed deposits are not insured by DICGC. Please read all offer documents carefully.
           </p>
