@@ -16,10 +16,9 @@ export default function EligibilityCalculator({
   const [existingEMI, setExistingEMI] = useState(0);
   const [tenure, setTenure] = useState(36);
   const [rate, setRate] = useState(12);
-  const [employmentType, setEmploymentType] = useState<"salaried" | "self-employed">("salaried");
 
-  const { eligibleAmount, disposableIncome, foirPercentage, eligibleEMI } = useMemo(() => {
-    const foir = employmentType === "salaried" ? 0.5 : 0.45;
+  const { eligibleAmount, foirPercentage, eligibleEMI } = useMemo(() => {
+    const foir = 0.5;
     const maxEMIAllowed = monthlyIncome * foir - existingEMI;
     const eligibleEMI = Math.max(0, maxEMIAllowed);
     const monthlyRate = rate / 12 / 100;
@@ -31,61 +30,36 @@ export default function EligibilityCalculator({
     const usedFoir = ((existingEMI + eligibleEMI) / monthlyIncome) * 100;
     return {
       eligibleAmount: Math.max(0, eligibleAmount),
-      disposableIncome: monthlyIncome - existingEMI,
       foirPercentage: Math.min(100, usedFoir),
       eligibleEMI,
     };
-  }, [monthlyIncome, existingEMI, tenure, rate, employmentType]);
+  }, [monthlyIncome, existingEMI, tenure, rate]);
 
   const maxLoan = loanType === "personal" ? 2500000 : 10000000;
   const cappedAmount = Math.min(eligibleAmount, maxLoan);
 
   const eligibilityStatus =
     cappedAmount < 50000
-      ? { label: "Low Eligibility", color: "#dc2626", bg: "#fef2f2" }
+      ? { label: "Low Eligibility",      color: "#dc2626", bg: "#fef2f2" }
       : cappedAmount < 300000
       ? { label: "Moderate Eligibility", color: "#d97706", bg: "#fffbeb" }
-      : { label: "Good Eligibility", color: "#059669", bg: "#ecfdf5" };
+      : { label: "Good Eligibility",     color: "#059669", bg: "#ecfdf5" };
 
   return (
     <div className="bg-white rounded-2xl border p-6" style={{ borderColor: "var(--border)" }}>
       <h3 className="font-bold text-lg mb-5" style={{ color: "var(--text-primary)" }}>{title}</h3>
 
-      {/* Employment Type Toggle */}
-      <div className="flex rounded-xl overflow-hidden border mb-5" style={{ borderColor: "var(--border)" }}>
-        {(["salaried", "self-employed"] as const).map(type => (
-          <button
-            key={type}
-            onClick={() => setEmploymentType(type)}
-            className="flex-1 py-2.5 text-sm font-medium transition-colors capitalize"
-            style={
-              employmentType === type
-                ? { background: "var(--primary)", color: "white" }
-                : { color: "var(--text-secondary)", background: "white" }
-            }
-          >
-            {type === "salaried" ? "Salaried" : "Self-employed"}
-          </button>
-        ))}
-      </div>
-
       <div className="space-y-5">
         {/* Monthly Income */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-              {employmentType === "salaried" ? "Net Monthly Salary" : "Monthly Net Income"}
-            </label>
+            <label className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>Net Monthly Income</label>
             <span className="font-bold text-sm px-3 py-1 rounded-lg" style={{ background: "var(--bg-light)", color: "var(--primary)" }}>
               ₹{monthlyIncome.toLocaleString("en-IN")}
             </span>
           </div>
           <input
-            type="range"
-            min={10000}
-            max={500000}
-            step={5000}
-            value={monthlyIncome}
+            type="range" min={10000} max={500000} step={5000} value={monthlyIncome}
             onChange={e => setMonthlyIncome(Number(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
             style={rangeTrackStyle(monthlyIncome, 10000, 500000, "var(--primary)")}
@@ -104,11 +78,7 @@ export default function EligibilityCalculator({
             </span>
           </div>
           <input
-            type="range"
-            min={0}
-            max={100000}
-            step={1000}
-            value={existingEMI}
+            type="range" min={0} max={100000} step={1000} value={existingEMI}
             onChange={e => setExistingEMI(Number(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
             style={rangeTrackStyle(existingEMI, 0, 100000, "var(--primary)")}
@@ -127,11 +97,7 @@ export default function EligibilityCalculator({
             </span>
           </div>
           <input
-            type="range"
-            min={12}
-            max={loanType === "business" ? 84 : 60}
-            step={12}
-            value={tenure}
+            type="range" min={12} max={loanType === "business" ? 84 : 60} step={12} value={tenure}
             onChange={e => setTenure(Number(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
             style={rangeTrackStyle(tenure, 12, loanType === "business" ? 84 : 60, "var(--primary)")}
@@ -150,11 +116,7 @@ export default function EligibilityCalculator({
             </span>
           </div>
           <input
-            type="range"
-            min={8}
-            max={28}
-            step={0.5}
-            value={rate}
+            type="range" min={8} max={28} step={0.5} value={rate}
             onChange={e => setRate(Number(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
             style={rangeTrackStyle(rate, 8, 28, "var(--primary)")}
@@ -189,8 +151,7 @@ export default function EligibilityCalculator({
         </div>
 
         <p className="text-xs mt-3" style={{ color: "var(--text-secondary)" }}>
-          Based on {employmentType === "salaried" ? "50%" : "45%"} FOIR (Fixed Obligation to Income Ratio) norm.
-          Actual eligibility is subject to credit assessment.
+          Based on 50% FOIR (Fixed Obligation to Income Ratio) norm. Actual eligibility is subject to credit assessment.
         </p>
       </div>
 

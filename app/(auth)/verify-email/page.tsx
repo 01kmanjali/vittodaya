@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Loader2, MailCheck } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
+import { toast } from "sonner";
 
 function VerifyEmailForm() {
   const router = useRouter();
@@ -16,8 +16,6 @@ function VerifyEmailForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
@@ -42,11 +40,11 @@ function VerifyEmailForm() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const code = otp.join("");
-    if (code.length < 6) { setError("Please enter the 6-digit OTP."); return; }
-    setError(""); setLoading(true);
+    if (code.length < 6) { toast.error("Please enter the 6-digit OTP."); return; }
+    setLoading(true);
     try {
       const res = await fetch("/api/auth/email-verify", {
         method: "POST",
@@ -54,8 +52,8 @@ function VerifyEmailForm() {
         body: JSON.stringify({ email, code }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Verification failed"); return; }
-      setSuccess("Email verified! Redirecting to login…");
+      if (!res.ok) { toast.error(data.error ?? "Verification failed"); return; }
+      toast.success("Email verified! Redirecting to login…");
       setTimeout(() => router.push("/login"), 1500);
     } finally {
       setLoading(false);
@@ -63,7 +61,7 @@ function VerifyEmailForm() {
   };
 
   const handleResend = async () => {
-    setError(""); setResending(true);
+    setResending(true);
     try {
       const res = await fetch("/api/auth/email-verify", {
         method: "PUT",
@@ -71,8 +69,8 @@ function VerifyEmailForm() {
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed to resend OTP"); return; }
-      setSuccess("New OTP sent to your email.");
+      if (!res.ok) { toast.error(data.error ?? "Failed to resend OTP"); return; }
+      toast.success("New OTP sent to your email.");
       setOtp(["", "", "", "", "", ""]);
       inputs.current[0]?.focus();
     } finally {
@@ -106,26 +104,11 @@ function VerifyEmailForm() {
                   value={digit}
                   onChange={e => handleChange(i, e.target.value)}
                   onKeyDown={e => handleKeyDown(i, e)}
-                  className="w-11 h-13 text-center text-xl font-bold border-2 rounded-lg outline-none transition-colors focus:border-blue-500"
-                  style={{
-                    borderColor: digit ? "var(--primary)" : undefined,
-                    height: "52px",
-                  }}
+                  className="w-11 text-center text-xl font-bold border-2 rounded-lg outline-none transition-colors focus:border-blue-500"
+                  style={{ height: "52px", borderColor: digit ? "var(--primary)" : undefined }}
                 />
               ))}
             </div>
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            {success && (
-              <Alert className="border-green-200 bg-green-50">
-                <AlertDescription className="text-green-700">{success}</AlertDescription>
-              </Alert>
-            )}
 
             <Button
               type="submit"

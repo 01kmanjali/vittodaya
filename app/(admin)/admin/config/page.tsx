@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+// Card/CardContent/CardHeader are used inside the Section component
 import { Button } from "@/components/ui/button";
 import {
   Loader2, Save, RotateCcw, LayoutGrid, Landmark, ShieldCheck,
-  TrendingUp, Newspaper, Settings, Bell, Wrench, AlertTriangle,
+  TrendingUp, Newspaper, Settings, Bell, Wrench, AlertTriangle, ChevronDown,
 } from "lucide-react";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -66,17 +68,33 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   );
 }
 
-function SectionHeader({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle: string }) {
+function Section({
+  icon: Icon, title, subtitle, children, defaultOpen = false,
+}: {
+  icon: React.ElementType; title: string; subtitle: string;
+  children: React.ReactNode; defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="flex items-center gap-3 mb-5">
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--bg-light)" }}>
-        <Icon className="h-5 w-5" style={{ color: "var(--primary)" }} />
-      </div>
-      <div>
-        <h2 className="font-semibold text-base" style={{ color: "var(--text-primary)" }}>{title}</h2>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-    </div>
+    <Card>
+      <CardHeader
+        className="border-b cursor-pointer select-none py-4 hover:bg-gray-50 transition-colors rounded-t-xl"
+        style={{ borderColor: open ? "var(--border)" : "transparent" }}
+        onClick={() => setOpen(v => !v)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--bg-light)" }}>
+            <Icon className="h-5 w-5" style={{ color: "var(--primary)" }} />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-semibold text-base" style={{ color: "var(--text-primary)" }}>{title}</h2>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        </div>
+      </CardHeader>
+      {open && <CardContent className="pt-5">{children}</CardContent>}
+    </Card>
   );
 }
 
@@ -115,12 +133,11 @@ function TextInput({ label, value, onChange, type = "text" }: { label: string; v
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function AdminConfigPage() {
-  const [config, setConfig]       = useState<Config | null>(null);
-  const [original, setOriginal]   = useState<Config | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [saving, setSaving]       = useState(false);
-  const [saved, setSaved]         = useState(false);
-  const [error, setError]         = useState("");
+  const [config, setConfig]     = useState<Config | null>(null);
+  const [original, setOriginal] = useState<Config | null>(null);
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => { fetchConfig(); }, []);
 
@@ -132,7 +149,8 @@ export default function AdminConfigPage() {
       setConfig(data.config);
       setOriginal(JSON.parse(JSON.stringify(data.config)));
     } catch {
-      setError("Failed to load configuration.");
+      setLoadFailed(true);
+      toast.error("Failed to load configuration.");
     } finally {
       setLoading(false);
     }
@@ -140,7 +158,7 @@ export default function AdminConfigPage() {
 
   async function handleSave() {
     if (!config) return;
-    setSaving(true); setError(""); setSaved(false);
+    setSaving(true);
     try {
       const res  = await fetch("/api/admin/config", {
         method:  "PUT",
@@ -148,18 +166,20 @@ export default function AdminConfigPage() {
         body:    JSON.stringify(config),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Failed to save"); return; }
+      if (!res.ok) { toast.error(data.error ?? "Failed to save"); return; }
       setConfig(data.config);
       setOriginal(JSON.parse(JSON.stringify(data.config)));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      toast.success("Configuration saved successfully.");
     } finally {
       setSaving(false);
     }
   }
 
   function handleReset() {
-    if (original) setConfig(JSON.parse(JSON.stringify(original)));
+    if (original) {
+      setConfig(JSON.parse(JSON.stringify(original)));
+      toast.info("Changes reset to last saved state.");
+    }
   }
 
   function setFeature(key: keyof Config["features"], patch: Partial<FeatureCfg>) {
@@ -185,7 +205,7 @@ export default function AdminConfigPage() {
   );
 
   if (!config) return (
-    <div className="p-8 text-center text-red-600">{error || "Failed to load config"}</div>
+    <div className="p-8 text-center text-red-600">{loadFailed ? "Failed to load configuration." : "Failed to load config"}</div>
   );
 
   const FEATURES: { key: keyof Config["features"]; Icon: React.ElementType }[] = [
@@ -224,17 +244,6 @@ export default function AdminConfigPage() {
         </div>
       </div>
 
-      {saved && (
-        <div className="mb-6 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm text-green-700 font-medium">
-          ✓ Configuration saved successfully.
-        </div>
-      )}
-      {error && (
-        <div className="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
       <div className="space-y-6">
 
         {/* ── Maintenance Banner ── */}
@@ -246,14 +255,10 @@ export default function AdminConfigPage() {
         )}
 
         {/* ── Feature Flags ── */}
-        <Card>
-          <CardHeader className="border-b pb-4">
-            <SectionHeader icon={Settings} title="Feature Visibility" subtitle="Control which features are visible and their current status for users" />
-          </CardHeader>
-          <CardContent className="pt-5 space-y-3">
+        <Section icon={Settings} title="Feature Visibility" subtitle="Control which features are visible and their current status for users">
+          <div className="space-y-3">
             {FEATURES.map(({ key, Icon }) => {
               const f = config.features[key];
-              const statusOpt = STATUS_OPTS.find(s => s.value === f.status)!;
               return (
                 <div key={key} className="flex items-center gap-4 p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--bg-light)" }}>
@@ -263,8 +268,6 @@ export default function AdminConfigPage() {
                     <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{f.label}</p>
                     <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</p>
                   </div>
-
-                  {/* Status selector */}
                   <div className="flex gap-1.5 flex-wrap">
                     {STATUS_OPTS.map(opt => (
                       <button
@@ -279,8 +282,6 @@ export default function AdminConfigPage() {
                       </button>
                     ))}
                   </div>
-
-                  {/* Enable toggle */}
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-muted-foreground">{f.enabled ? "Visible" : "Hidden"}</span>
                     <Toggle checked={f.enabled} onChange={v => setFeature(key, { enabled: v })} />
@@ -288,48 +289,24 @@ export default function AdminConfigPage() {
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
         {/* ── FD Settings ── */}
-        <Card>
-          <CardHeader className="border-b pb-4">
-            <SectionHeader icon={LayoutGrid} title="Fixed Deposit Settings" subtitle="Investment limits, available tenures, and senior citizen benefits" />
-          </CardHeader>
-          <CardContent className="pt-5 space-y-5">
+        <Section icon={LayoutGrid} title="Fixed Deposit Settings" subtitle="Investment limits, available tenures, and senior citizen benefits">
+          <div className="space-y-5">
             <div className="grid sm:grid-cols-3 gap-4">
-              <NumberInput
-                label="Minimum Investment (₹)"
-                value={config.fd.minAmount}
-                onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, minAmount: v } })}
-                prefix="₹"
-              />
-              <NumberInput
-                label="Maximum Investment (₹)"
-                value={config.fd.maxAmount}
-                onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, maxAmount: v } })}
-                prefix="₹"
-              />
-              <NumberInput
-                label="Senior Citizen Bonus (%)"
-                value={config.fd.seniorCitizenBonus}
-                onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, seniorCitizenBonus: v } })}
-                prefix="%"
-              />
+              <NumberInput label="Minimum Investment (₹)" value={config.fd.minAmount} onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, minAmount: v } })} prefix="₹" />
+              <NumberInput label="Maximum Investment (₹)" value={config.fd.maxAmount} onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, maxAmount: v } })} prefix="₹" />
+              <NumberInput label="Senior Citizen Bonus (%)" value={config.fd.seniorCitizenBonus} onChange={v => setConfig(c => !c ? c : { ...c, fd: { ...c.fd, seniorCitizenBonus: v } })} prefix="%" />
             </div>
             <div>
               <label className="text-xs font-medium mb-2 block" style={{ color: "var(--text-secondary)" }}>Available Tenures (months)</label>
               <div className="flex flex-wrap gap-2">
                 {ALL_TENURES.map(t => (
                   <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleTenure(t)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${
-                      config.fd.tenures.includes(t)
-                        ? "text-white border-transparent"
-                        : "bg-white border-gray-200 text-gray-500 hover:border-blue-300"
-                    }`}
+                    key={t} type="button" onClick={() => toggleTenure(t)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${config.fd.tenures.includes(t) ? "text-white border-transparent" : "bg-white border-gray-200 text-gray-500 hover:border-blue-300"}`}
                     style={config.fd.tenures.includes(t) ? { background: "var(--primary)", borderColor: "var(--primary)" } : {}}
                   >
                     {t}m
@@ -337,15 +314,12 @@ export default function AdminConfigPage() {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
         {/* ── Loan Settings ── */}
-        <Card>
-          <CardHeader className="border-b pb-4">
-            <SectionHeader icon={Landmark} title="Loan Product Settings" subtitle="Enable/disable individual loan types and set amount & tenure limits" />
-          </CardHeader>
-          <CardContent className="pt-5 space-y-4">
+        <Section icon={Landmark} title="Loan Product Settings" subtitle="Enable/disable individual loan types and set amount & tenure limits">
+          <div className="space-y-4">
             {LOAN_TYPES.map(({ key, label }) => {
               const l = config.loans[key];
               return (
@@ -366,37 +340,26 @@ export default function AdminConfigPage() {
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
         {/* ── App Settings ── */}
-        <Card>
-          <CardHeader className="border-b pb-4">
-            <SectionHeader icon={Wrench} title="App Settings" subtitle="Maintenance mode, registration, and support contact details" />
-          </CardHeader>
-          <CardContent className="pt-5 space-y-5">
+        <Section icon={Wrench} title="App Settings" subtitle="Maintenance mode, registration, and support contact details">
+          <div className="space-y-5">
             <div className="grid sm:grid-cols-2 gap-4">
-              {/* Maintenance mode */}
               <div className="flex items-center justify-between p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>Maintenance Mode</p>
                   <p className="text-xs text-muted-foreground">Show maintenance page to all users</p>
                 </div>
-                <Toggle
-                  checked={config.app.maintenanceMode}
-                  onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, maintenanceMode: v } })}
-                />
+                <Toggle checked={config.app.maintenanceMode} onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, maintenanceMode: v } })} />
               </div>
-              {/* Registration */}
               <div className="flex items-center justify-between p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>User Registration</p>
                   <p className="text-xs text-muted-foreground">Allow new users to register</p>
                 </div>
-                <Toggle
-                  checked={config.app.registrationOpen}
-                  onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, registrationOpen: v } })}
-                />
+                <Toggle checked={config.app.registrationOpen} onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, registrationOpen: v } })} />
               </div>
             </div>
             <div>
@@ -404,51 +367,35 @@ export default function AdminConfigPage() {
               <textarea
                 value={config.app.maintenanceMessage}
                 onChange={e => setConfig(c => !c ? c : { ...c, app: { ...c.app, maintenanceMessage: e.target.value } })}
-                rows={2}
-                className="w-full border rounded-xl px-3 py-2 text-sm outline-none resize-none"
+                rows={2} className="w-full border rounded-xl px-3 py-2 text-sm outline-none resize-none"
                 style={{ borderColor: "var(--border)" }}
               />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <TextInput
-                label="Support Email"
-                value={config.app.supportEmail}
-                onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, supportEmail: v } })}
-                type="email"
-              />
-              <TextInput
-                label="Support Phone"
-                value={config.app.supportPhone}
-                onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, supportPhone: v } })}
-              />
+              <TextInput label="Support Email" value={config.app.supportEmail} onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, supportEmail: v } })} type="email" />
+              <TextInput label="Support Phone" value={config.app.supportPhone} onChange={v => setConfig(c => !c ? c : { ...c, app: { ...c.app, supportPhone: v } })} />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
         {/* ── Notification Settings ── */}
-        <Card>
-          <CardHeader className="border-b pb-4">
-            <SectionHeader icon={Bell} title="Notification Settings" subtitle="Control which automated emails are sent to users" />
-          </CardHeader>
-          <CardContent className="pt-5 space-y-3">
+        <Section icon={Bell} title="Notification Settings" subtitle="Control which automated emails are sent to users">
+          <div className="space-y-3">
             {([
-              { key: "welcomeEmail",       label: "Welcome Email",        desc: "Send welcome email when a user registers" },
-              { key: "otpEmail",           label: "OTP / Verification",   desc: "Send OTP emails for KYC and security actions" },
-              { key: "applicationUpdates", label: "Application Updates",  desc: "Notify users on loan/FD application status changes" },
+              { key: "welcomeEmail",       label: "Welcome Email",       desc: "Send welcome email when a user registers" },
+              { key: "otpEmail",           label: "OTP / Verification",  desc: "Send OTP emails for KYC and security actions" },
+              { key: "applicationUpdates", label: "Application Updates", desc: "Notify users on loan/FD application status changes" },
             ] as { key: keyof Config["notifications"]; label: string; desc: string }[]).map(({ key, label, desc }) => (
               <div key={key} className="flex items-center justify-between p-4 rounded-xl border" style={{ borderColor: "var(--border)" }}>
                 <div>
                   <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{label}</p>
                   <p className="text-xs text-muted-foreground">{desc}</p>
                 </div>
-                <Toggle
-                  checked={config.notifications[key]}
-                  onChange={v => setConfig(c => !c ? c : { ...c, notifications: { ...c.notifications, [key]: v } })}
-                />
+                <Toggle checked={config.notifications[key]} onChange={v => setConfig(c => !c ? c : { ...c, notifications: { ...c.notifications, [key]: v } })} />
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </Section>
 
         {/* Save footer */}
         <div className="flex justify-end gap-3 pb-4">

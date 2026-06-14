@@ -12,6 +12,7 @@ import {
   ChevronRight, Pencil, X, Eye, EyeOff, Loader2, Upload,
   Send, RefreshCw, ShieldOff,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -224,7 +225,6 @@ function OTPFlow({
         </div>
       )}
 
-      {error && <Alert type="error" msg={error} />}
       {success && !error && <Alert type="success" msg={success} />}
     </div>
   );
@@ -236,8 +236,6 @@ export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
   const [panel, setPanel] = useState<Panel>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   // ── edit profile state ──────────────────────────────────────────────────
   const [profileForm, setProfileForm] = useState({
@@ -272,11 +270,11 @@ export default function ProfilePage() {
   }, [user]);
 
   function openPanel(p: Panel) {
-    setError(""); setSuccess(""); setPanel(p);
+    setPanel(p);
     if (p === "2fa_setup") initTFA();
   }
   function closePanel() {
-    setPanel(null); setError(""); setSuccess("");
+    setPanel(null);
     setTfaQR(""); setTfaSecret(""); setTfaToken(""); setTfaStep("loading");
     setTfaDisableToken("");
     setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -287,15 +285,15 @@ export default function ProfilePage() {
     setTfaStep("loading");
     const res = await fetch("/api/auth/2fa/setup", { method: "POST" });
     const data = await res.json();
-    if (!res.ok) { setError(data.error); return; }
+    if (!res.ok) { toast.error(data.error ?? "Failed to setup 2FA"); return; }
     setTfaQR(data.qrCode);
     setTfaSecret(data.secret);
     setTfaStep("scan");
   }
 
   async function verifyTFA() {
-    if (tfaToken.length !== 6) { setError("Enter 6-digit code"); return; }
-    setSaving(true); setError("");
+    if (tfaToken.length !== 6) { toast.error("Enter 6-digit code"); return; }
+    setSaving(true);
     const res = await fetch("/api/auth/2fa/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -303,15 +301,16 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(data.error); return; }
+    if (!res.ok) { toast.error(data.error ?? "Invalid code"); return; }
+    toast.success("2FA enabled successfully.");
     setTfaStep("done");
     setUser({ ...user!, twoFactorEnabled: true });
     setTimeout(closePanel, 1500);
   }
 
   async function disableTFA() {
-    if (tfaDisableToken.length !== 6) { setError("Enter 6-digit code from your app"); return; }
-    setSaving(true); setError("");
+    if (tfaDisableToken.length !== 6) { toast.error("Enter 6-digit code from your app"); return; }
+    setSaving(true);
     const res = await fetch("/api/auth/2fa/disable", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -319,8 +318,8 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(data.error); return; }
-    setSuccess("2FA disabled.");
+    if (!res.ok) { toast.error(data.error ?? "Failed to disable 2FA"); return; }
+    toast.success("2FA disabled successfully.");
     setUser({ ...user!, twoFactorEnabled: false });
     setTimeout(closePanel, 1200);
   }
@@ -328,7 +327,7 @@ export default function ProfilePage() {
   // ── save profile ─────────────────────────────────────────────────────────
   async function saveProfile() {
     if (!user) return;
-    setSaving(true); setError("");
+    setSaving(true);
     const res = await fetch(`/api/users/${user.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -336,22 +335,22 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(data.error ?? "Failed to update"); return; }
+    if (!res.ok) { toast.error(data.error ?? "Failed to update profile"); return; }
     setUser({
       ...user, name: data.user.name, phone: data.user.phone,
       city: data.user.city, isSeniorCitizen: data.user.isSeniorCitizen,
       dateOfBirth: data.user.dateOfBirth, address: data.user.address,
       state: data.user.state, pincode: data.user.pincode,
     });
-    setSuccess("Profile updated.");
+    toast.success("Profile updated successfully.");
     setTimeout(closePanel, 1000);
   }
 
   // ── change password ───────────────────────────────────────────────────────
   async function changePassword() {
-    if (pwForm.newPassword !== pwForm.confirmPassword) { setError("Passwords do not match"); return; }
-    if (pwForm.newPassword.length < 8) { setError("Min 8 characters required"); return; }
-    setSaving(true); setError("");
+    if (pwForm.newPassword !== pwForm.confirmPassword) { toast.error("Passwords do not match"); return; }
+    if (pwForm.newPassword.length < 8) { toast.error("Minimum 8 characters required"); return; }
+    setSaving(true);
     const res = await fetch("/api/users/change-password", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -359,8 +358,8 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     setSaving(false);
-    if (!res.ok) { setError(data.error ?? "Failed"); return; }
-    setSuccess("Password changed.");
+    if (!res.ok) { toast.error(data.error ?? "Failed to change password"); return; }
+    toast.success("Password changed successfully.");
     setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     setTimeout(closePanel, 1200);
   }
@@ -623,8 +622,6 @@ export default function ProfilePage() {
                 className="h-4 w-4 rounded" />
               <span style={{ color: "var(--text-primary)" }}>I am a Senior Citizen (60+ years)</span>
             </label>
-            {error && <Alert type="error" msg={error} />}
-            {success && <Alert type="success" msg={success} />}
             <div className="flex gap-3 pt-1">
               <Button variant="primary" size="md" className="flex-1" onClick={saveProfile} disabled={saving}>
                 {saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</> : "Save Changes"}
@@ -711,8 +708,6 @@ export default function ProfilePage() {
                 </div>
               </div>
             ))}
-            {error && <Alert type="error" msg={error} />}
-            {success && <Alert type="success" msg={success} />}
             <div className="flex gap-3 pt-1">
               <Button variant="primary" size="md" className="flex-1" onClick={changePassword}
                 disabled={saving || !pwForm.currentPassword || !pwForm.newPassword}>
@@ -767,7 +762,6 @@ export default function ProfilePage() {
                   style={{ borderColor: "var(--border)", color: "var(--primary)" }}
                   autoFocus
                 />
-                {error && <Alert type="error" msg={error} />}
                 <div className="flex gap-3">
                   <Button variant="primary" size="md" className="flex-1" onClick={verifyTFA}
                     disabled={saving || tfaToken.length !== 6}>
@@ -807,8 +801,6 @@ export default function ProfilePage() {
               style={{ borderColor: "var(--border)", color: "var(--danger)" }}
               autoFocus
             />
-            {error && <Alert type="error" msg={error} />}
-            {success && <Alert type="success" msg={success} />}
             <div className="flex gap-3">
               <Button variant="danger" size="md" className="flex-1" onClick={disableTFA}
                 disabled={saving || tfaDisableToken.length !== 6}>

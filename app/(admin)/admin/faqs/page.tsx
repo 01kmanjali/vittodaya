@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFAQs, useCreateFAQ, useDeleteFAQ } from "@/lib/queries/useFAQs";
+import { toast } from "sonner";
 
 export default function AdminFAQsPage() {
   const { data: faqs = [], isLoading } = useFAQs();
@@ -22,10 +23,18 @@ export default function AdminFAQsPage() {
   });
 
   async function handleSave() {
-    if (!form.category || !form.question || !form.answer) return;
-    await createFAQ.mutateAsync(form);
-    setForm({ category: "", question: "", answer: "" });
-    setShowForm(false);
+    if (!form.category || !form.question || !form.answer) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+    try {
+      await createFAQ.mutateAsync(form);
+      setForm({ category: "", question: "", answer: "" });
+      setShowForm(false);
+      toast.success("FAQ created successfully.");
+    } catch {
+      toast.error("Failed to create FAQ.");
+    }
   }
 
   return (
@@ -116,7 +125,7 @@ export default function AdminFAQsPage() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Button type="button" variant="primaryOutline" size="sm">Edit</Button>
-                  <Button type="button" variant="dangerOutline" size="sm" onClick={() => deleteFAQ.mutate(faq._id)} disabled={deleteFAQ.isPending}>Delete</Button>
+                  <Button type="button" variant="dangerOutline" size="sm" onClick={() => { deleteFAQ.mutate(faq._id, { onSuccess: () => toast.success("FAQ deleted."), onError: () => toast.error("Failed to delete FAQ.") }); }} disabled={deleteFAQ.isPending}>Delete</Button>
                 </div>
               </div>
             </div>

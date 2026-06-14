@@ -15,6 +15,7 @@ import {
   Info, Phone, ArrowRight, Shield, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFeatureFlags, isFDAvailable } from "@/lib/queries/useFeatureFlags";
 
 type SessionInfo = { name: string; email: string; role: "admin" | "user" };
 
@@ -135,6 +136,8 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: nextAuthSession } = useSession();
   const pathname = usePathname();
+  const { data: features } = useFeatureFlags();
+  const fdAvailable = isFDAvailable(features);
 
   const session: SessionInfo | null = nextAuthSession?.user
     ? {
@@ -224,8 +227,8 @@ export default function Navbar() {
               </div>
             </Dropdown>
 
-            {/* Investments dropdown */}
-            <Dropdown label="Investments">
+            {/* Investments dropdown — hidden when FD is disabled */}
+            {fdAvailable && <Dropdown label="Investments">
               <div className="p-3">
                 <p className="text-[10px] font-bold px-2 py-1.5 uppercase tracking-widest text-muted-foreground mb-1">
                   Investment Products
@@ -266,7 +269,7 @@ export default function Navbar() {
                   </p>
                 </div>
               </div>
-            </Dropdown>
+            </Dropdown>}
 
             {/* Company dropdown */}
             <Dropdown label="Company">

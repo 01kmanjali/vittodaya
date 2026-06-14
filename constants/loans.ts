@@ -42,7 +42,7 @@ export const loanProducts: LoanProduct[] = [
     name: "Personal Loan",
     tagline: "Quick funds for every need",
     heroDesc:
-      "Get instant personal loans up to ₹25 Lakhs at competitive interest rates with minimal documentation. Salaried and self-employed individuals both eligible.",
+      "Get instant personal loans up to ₹25 Lakhs at competitive interest rates with minimal documentation. Quick approval with easy eligibility.",
     minAmount: 50000,
     maxAmount: 2500000,
     minTenureMonths: 12,
@@ -58,11 +58,9 @@ export const loanProducts: LoanProduct[] = [
     ],
     eligibility: [
       { label: "Age", value: "21 – 60 years" },
-      { label: "Employment", value: "Salaried / Self-employed" },
-      { label: "Minimum Income (Salaried)", value: "₹15,000 per month" },
-      { label: "Minimum Income (Self-employed)", value: "₹2 Lakhs per annum" },
+      { label: "Minimum Monthly Income", value: "₹15,000 per month" },
       { label: "CIBIL Score", value: "700 and above" },
-      { label: "Work Experience", value: "1 year (Salaried) / 2 years (Self-employed)" },
+      { label: "Age", value: "21 – 60 years" },
     ],
     documents: [
       {
@@ -70,12 +68,8 @@ export const loanProducts: LoanProduct[] = [
         items: ["Aadhaar Card", "PAN Card", "Passport / Voter ID / Driving Licence"],
       },
       {
-        category: "Income Proof (Salaried)",
-        items: ["Last 3 months salary slips", "Last 6 months bank statement", "Form 16 / ITR of last 2 years"],
-      },
-      {
-        category: "Income Proof (Self-employed)",
-        items: ["Last 2 years ITR with computation", "Last 12 months bank statement", "GST Returns (if applicable)"],
+        category: "Income Proof",
+        items: ["Last 3 months salary slips or ITR", "Last 6 months bank statement", "Form 16 / ITR of last 2 years"],
       },
     ],
     tags: ["No Collateral", "Quick Disbursal", "Flexible EMI"],
@@ -150,7 +144,7 @@ export const loanProducts: LoanProduct[] = [
     ],
     eligibility: [
       { label: "Age", value: "21 – 65 years" },
-      { label: "Employment", value: "Salaried / Self-employed / Business owner" },
+      { label: "Applicant", value: "Indian resident user" },
       { label: "Minimum Income", value: "₹12,000 per month" },
       { label: "CIBIL Score", value: "650 and above" },
       { label: "Driving Licence", value: "Valid driving licence mandatory" },
@@ -196,7 +190,7 @@ export const loanProducts: LoanProduct[] = [
     eligibility: [
       { label: "Age", value: "25 – 65 years" },
       { label: "Property Type", value: "Residential / Commercial / Industrial" },
-      { label: "Employment", value: "Salaried / Self-employed / Business owner" },
+      { label: "Applicant", value: "Indian resident user" },
       { label: "LTV Ratio", value: "Up to 60% of property value" },
       { label: "CIBIL Score", value: "650 and above" },
       { label: "Property Title", value: "Clear and marketable title required" },

@@ -10,8 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Plus, Pencil, Trash2, X, Loader2, Search, ChevronUp, ChevronDown,
-  LayoutGrid, AlertTriangle, CheckCircle,
+  LayoutGrid, AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -334,40 +335,50 @@ export default function AdminFDSchemesPage() {
   const [filterActive, setFilterActive] = useState("All");
   const [sortField,  setSortField]  = useState<"bankName" | "minAmount" | "rate">("bankName");
   const [sortDir,    setSortDir]    = useState<"asc" | "desc">("asc");
-  const [modal,      setModal]      = useState<"add" | "edit" | "delete" | null>(null);
-  const [selected,   setSelected]   = useState<FDScheme | null>(null);
-  const [toast,      setToast]      = useState("");
-
-  function showToast(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
-  }
+  const [modal,    setModal]    = useState<"add" | "edit" | "delete" | null>(null);
+  const [selected, setSelected] = useState<FDScheme | null>(null);
 
   function openEdit(s: FDScheme)   { setSelected(s); setModal("edit"); }
   function openDelete(s: FDScheme) { setSelected(s); setModal("delete"); }
   function closeModal()            { setModal(null); setSelected(null); }
 
   async function handleToggleActive(s: FDScheme) {
-    await updateMut.mutateAsync({ id: s._id!, body: { isActive: !s.isActive } });
-    showToast(`${s.bankName} ${!s.isActive ? "enabled" : "disabled"}`);
+    try {
+      await updateMut.mutateAsync({ id: s._id!, body: { isActive: !s.isActive } });
+      toast.success(`${s.bankName} ${!s.isActive ? "enabled" : "disabled"}.`);
+    } catch {
+      toast.error("Failed to update scheme.");
+    }
   }
 
   async function handleCreate(data: Partial<FDScheme>) {
-    await createMut.mutateAsync(data);
-    closeModal();
-    showToast("Scheme created successfully");
+    try {
+      await createMut.mutateAsync(data);
+      closeModal();
+      toast.success("Scheme created successfully.");
+    } catch {
+      toast.error("Failed to create scheme.");
+    }
   }
 
   async function handleUpdate(data: Partial<FDScheme>) {
-    await updateMut.mutateAsync({ id: selected!._id!, body: data });
-    closeModal();
-    showToast("Scheme updated successfully");
+    try {
+      await updateMut.mutateAsync({ id: selected!._id!, body: data });
+      closeModal();
+      toast.success("Scheme updated successfully.");
+    } catch {
+      toast.error("Failed to update scheme.");
+    }
   }
 
   async function handleDelete() {
-    await deleteMut.mutateAsync(selected!._id!);
-    closeModal();
-    showToast("Scheme deleted");
+    try {
+      await deleteMut.mutateAsync(selected!._id!);
+      closeModal();
+      toast.success("Scheme deleted.");
+    } catch {
+      toast.error("Failed to delete scheme.");
+    }
   }
 
   // Filter + sort
@@ -409,13 +420,6 @@ export default function AdminFDSchemesPage() {
 
   return (
     <div>
-      {/* Toast */}
-      {toast && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-3 rounded-xl bg-white border shadow-lg text-sm font-medium" style={{ borderColor: "var(--border)" }}>
-          <CheckCircle className="h-4 w-4 text-green-600" /> {toast}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

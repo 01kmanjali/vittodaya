@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "sonner";
 
 function LoginForm() {
   const router = useRouter();
@@ -20,7 +20,6 @@ function LoginForm() {
   const { login, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [show2FA, setShow2FA] = useState(false);
   const [tfaDigits, setTfaDigits] = useState(["", "", "", "", "", ""]);
   const tfaRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -47,7 +46,6 @@ function LoginForm() {
 
   const handleSubmit: React.ComponentProps<"form">["onSubmit"] = async (e) => {
     e.preventDefault();
-    setError("");
     const token = show2FA ? tfaDigits.join("") : undefined;
     const result = await login(email, password, token);
     if (result.twoFactorRequired) {
@@ -56,10 +54,11 @@ function LoginForm() {
       return;
     }
     if (result.error) {
-      setError(result.error);
+      toast.error(result.error);
       if (show2FA) setTfaDigits(["", "", "", "", "", ""]);
       return;
     }
+    toast.success("Signed in successfully!");
     if (redirectTo) router.push(redirectTo);
     else if (result.role === "admin") router.push("/admin");
     else router.push("/dashboard");
@@ -138,13 +137,6 @@ function LoginForm() {
               </div>
             )}
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
             <Button
               type="submit"
               disabled={isLoading || (show2FA && tfaDigits.join("").length < 6)}
@@ -158,7 +150,7 @@ function LoginForm() {
             {show2FA && (
               <button
                 type="button"
-                onClick={() => { setShow2FA(false); setTfaDigits(["", "", "", "", "", ""]); setError(""); }}
+                onClick={() => { setShow2FA(false); setTfaDigits(["", "", "", "", "", ""]); }}
                 className="w-full text-sm text-center hover:underline"
                 style={{ color: "var(--text-secondary)" }}
               >

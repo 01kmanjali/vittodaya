@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -23,21 +23,20 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [terms, setTerms] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit: React.ComponentProps<"form">["onSubmit"] = async (e) => {
     e.preventDefault();
-    setError("");
     if (!terms) {
-      setError("Please agree to the Terms of Service and Privacy Policy.");
+      toast.error("Please agree to the Terms of Service and Privacy Policy.");
       return;
     }
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
     const result = await register(name, email, phone, password);
     if (result.error) {
-      setError(result.error);
+      toast.error(result.error);
       return;
     }
+    toast.success("Account created! Please verify your email.");
     router.push(`/verify-email?email=${encodeURIComponent(result.email ?? email)}`);
   };
 
@@ -81,13 +80,6 @@ export default function RegisterPage() {
                 <Link href="#" className="underline" style={{ color: "var(--primary)" }}>Privacy Policy</Link>
               </Label>
             </div>
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
 
             <Button
               type="submit"

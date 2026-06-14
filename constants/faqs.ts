@@ -47,7 +47,7 @@ export const faqs: FAQ[] = [
     id: "pl-1",
     question: "Who is eligible for a Personal Loan from Vittodaya?",
     answer:
-      "Both salaried employees and self-employed professionals are eligible. Key criteria: Age between 21–60 years, minimum monthly income of ₹15,000 (salaried) or ₹2 Lakhs annual income (self-employed), CIBIL score of 700 or above, and at least 1 year of work experience for salaried applicants.",
+      "Any Indian resident user is eligible. Key criteria: Age between 21–60 years, minimum monthly income of ₹15,000, and CIBIL score of 700 or above.",
     category: "personal-loan",
     order: 1,
   },

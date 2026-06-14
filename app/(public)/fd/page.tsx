@@ -4,12 +4,44 @@ import { useState } from "react";
 import FDCard from "@/components/fd/FDCard";
 import FDFilters from "@/components/fd/FDFilters";
 import { useFDSchemes } from "@/lib/queries/useFDSchemes";
+import { useFeatureFlags } from "@/lib/queries/useFeatureFlags";
+import { AlertTriangle, Clock, Wrench, Ban } from "lucide-react";
+
+const STATUS_INFO = {
+  disabled:    { Icon: Ban,           color: "#dc2626", bg: "#fef2f2", title: "Feature Disabled",       message: "Fixed Deposits are not available at this time." },
+  maintenance: { Icon: Wrench,        color: "#d97706", bg: "#fffbeb", title: "Under Maintenance",      message: "Fixed Deposits are temporarily under maintenance. Please check back soon." },
+  upcoming:    { Icon: Clock,         color: "#7c3aed", bg: "#fdf4ff", title: "Coming Soon",            message: "Fixed Deposits will be available shortly. Stay tuned!" },
+  active:      { Icon: AlertTriangle, color: "#dc2626", bg: "#fef2f2", title: "Currently Unavailable",  message: "Fixed Deposits are not available at this time." },
+};
 
 export default function FDPage() {
+  const { data: features } = useFeatureFlags();
   const [selectedTenure, setSelectedTenure] = useState(0);
   const [selectedType, setSelectedType] = useState("all");
   const [isSenior, setIsSenior] = useState(false);
   const [sortBy, setSortBy] = useState("rate-desc");
+
+  if (features && (!features.fixedDeposits.enabled || features.fixedDeposits.status === "disabled" || features.fixedDeposits.status === "upcoming" || features.fixedDeposits.status === "maintenance")) {
+    const status = features.fixedDeposits.status;
+    const info = STATUS_INFO[status] ?? STATUS_INFO.disabled;
+    const { Icon } = info;
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center px-4">
+        <div className="rounded-2xl border p-10 max-w-md w-full text-center" style={{ borderColor: "var(--border)", background: info.bg }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: info.color + "22" }}>
+            <Icon className="w-8 h-8" style={{ color: info.color }} />
+          </div>
+          <h1 className="text-xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>{info.title}</h1>
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{info.message}</p>
+          {features.fixedDeposits.label && (
+            <p className="mt-3 text-xs font-medium px-3 py-1.5 rounded-full inline-block" style={{ background: info.color + "22", color: info.color }}>
+              {features.fixedDeposits.label}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const params: Record<string, string> = { active: "true" };
   if (selectedType !== "all") params.bankType = selectedType;
