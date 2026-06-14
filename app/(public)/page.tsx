@@ -41,22 +41,27 @@ function getMaxRate(scheme: { tenureRates: Array<{ regularRate: number }> }) {
 }
 
 export default async function HomePage() {
-  await connectDB();
-
-  const [topSchemesRaw, loanProductsRaw] = await Promise.all([
-    FDSchemeModel.find({ isActive: true, featuredOrder: { $gt: 0 } }).sort({ featuredOrder: 1 }).limit(3).lean(),
-    LoanProductModel.find({ isActive: true }).lean(),
-  ]);
-
-  const topSchemes = JSON.parse(JSON.stringify(topSchemesRaw)) as Array<{
+  type TopScheme = {
     _id: string; slug: string; bankName: string; bankType: string; rating: string;
     ratingAgency: string; tags: string[]; minAmount: number;
     tenureRates: Array<{ regularRate: number }>;
-  }>;
+  };
+  type LoanProduct = { _id: string; slug: string; type: string; name: string; tagline: string; rateFrom: number; };
 
-  const loanProducts = JSON.parse(JSON.stringify(loanProductsRaw)) as Array<{
-    _id: string; slug: string; type: string; name: string; tagline: string; rateFrom: number;
-  }>;
+  let topSchemes: TopScheme[] = [];
+  let loanProducts: LoanProduct[] = [];
+
+  try {
+    await connectDB();
+    const [topSchemesRaw, loanProductsRaw] = await Promise.all([
+      FDSchemeModel.find({ isActive: true, featuredOrder: { $gt: 0 } }).sort({ featuredOrder: 1 }).limit(3).lean(),
+      LoanProductModel.find({ isActive: true }).lean(),
+    ]);
+    topSchemes  = JSON.parse(JSON.stringify(topSchemesRaw))  as TopScheme[];
+    loanProducts = JSON.parse(JSON.stringify(loanProductsRaw)) as LoanProduct[];
+  } catch (err) {
+    console.error("[HomePage] DB error:", err);
+  }
 
   return (
     <>
