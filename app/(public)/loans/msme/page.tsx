@@ -73,7 +73,7 @@ export default async function MSMELoanPage() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
+                <Link href="/loans/apply?type=msme" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
                 <a href="#calculators" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30">Calculate EMI</a>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default async function MSMELoanPage() {
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Grow Your Business Today</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-            <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply for Business Loan</Link>
+            <Link href="/loans/apply?type=msme" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply for Business Loan</Link>
             <Link href="/contact" className="px-6 py-3 rounded-xl font-semibold border hover:bg-gray-50" style={{ color: "var(--primary)", borderColor: "var(--primary)" }}>Talk to an Expert</Link>
           </div>
         </div>

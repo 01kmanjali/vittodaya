@@ -61,7 +61,7 @@ export default async function EVLoanPage() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
+                <Link href="/loans/apply?type=ev" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
                 <a href="#calculator" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30">Calculate EMI</a>
               </div>
             </div>
@@ -169,7 +169,7 @@ export default async function EVLoanPage() {
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-3" style={{ color: "#065f46" }}>Make the Switch to Electric</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-            <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)" }}>Apply for EV Loan</Link>
+            <Link href="/loans/apply?type=ev" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)" }}>Apply for EV Loan</Link>
             <Link href="/faq" className="px-6 py-3 rounded-xl font-semibold border border-green-600 text-green-700 hover:bg-green-50">FAQs on EV Loan</Link>
           </div>
         </div>

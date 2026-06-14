@@ -74,7 +74,7 @@ export default async function LAPPage() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
+                <Link href="/loans/apply?type=lap" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>Apply Now</Link>
                 <a href="#calculator" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30">Calculate EMI</a>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default async function LAPPage() {
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-3" style={{ color: "#3b0764" }}>Unlock the Power of Your Property</h2>
           <div className="flex justify-center gap-4 flex-wrap">
-            <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "#7c3aed" }}>Apply for LAP</Link>
+            <Link href="/loans/apply?type=lap" className="px-6 py-3 rounded-xl font-semibold text-white" style={{ background: "#7c3aed" }}>Apply for LAP</Link>
             <Link href="/contact" className="px-6 py-3 rounded-xl font-semibold border border-purple-600 text-purple-700 hover:bg-purple-50">Talk to Our Expert</Link>
           </div>
         </div>

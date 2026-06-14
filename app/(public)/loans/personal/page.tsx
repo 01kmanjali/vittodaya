@@ -58,7 +58,7 @@ export default async function PersonalLoanPage() {
                 ))}
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
+                <Link href="/loans/apply?type=personal" className="px-6 py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90" style={{ background: "linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%)" }}>
                   Apply Now
                 </Link>
                 <a href="#emi-calculator" className="px-6 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20 border border-white/30 transition-colors">
@@ -172,7 +172,7 @@ export default async function PersonalLoanPage() {
             <h3 className="text-2xl font-bold mb-2">Ready to Apply?</h3>
             <p className="text-blue-100 text-sm mb-8 max-w-md mx-auto">Apply online in minutes. Our team will get back to you within 2 business hours.</p>
             <div className="flex justify-center gap-4 flex-wrap">
-              <Link href="/register" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90" style={{ background: "var(--secondary)", color: "white" }}>
+              <Link href="/loans/apply?type=personal" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90" style={{ background: "var(--secondary)", color: "white" }}>
                 Apply for Personal Loan →
               </Link>
               <Link href="/faq" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-white/15 backdrop-blur hover:bg-white/25 border border-white/30 transition-colors">
