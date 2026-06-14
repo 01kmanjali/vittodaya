@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
   await connectDB();
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type");
-  const filter: Record<string, unknown> = { isActive: true };
+  const showAll = searchParams.get("showAll") === "true";
+  const filter: Record<string, unknown> = showAll ? {} : { isActive: true };
   if (type) filter.type = type;
   const records = await InvestorRelation.find(filter).sort({ order: 1, publishedDate: -1 }).lean();
   return NextResponse.json({ records });

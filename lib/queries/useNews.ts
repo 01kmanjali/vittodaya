@@ -8,7 +8,8 @@ export interface NewsArticle {
   excerpt?: string;
   category: string;
   source?: string;
-  publishedDate?: string | Date;
+  publishedDate?: string;
+  readTime?: string;
   isFeatured?: boolean;
   imageColor?: string;
   imageInitial?: string;
@@ -34,6 +35,17 @@ async function createNews(body: Partial<NewsArticle>) {
   return data.article as NewsArticle;
 }
 
+async function updateNews({ id, body }: { id: string; body: Partial<NewsArticle> }) {
+  const res = await fetch(`/api/news-media/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to update article");
+  return data.article as NewsArticle;
+}
+
 async function deleteNews(id: string) {
   const res = await fetch(`/api/news-media/${id}`, { method: "DELETE" });
   const data = await res.json();
@@ -52,6 +64,14 @@ export function useCreateNews() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: createNews,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["news"] }),
+  });
+}
+
+export function useUpdateNews() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: updateNews,
     onSuccess: () => qc.invalidateQueries({ queryKey: ["news"] }),
   });
 }
