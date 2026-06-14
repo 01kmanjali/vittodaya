@@ -157,3 +157,5 @@ export default async function FDDetailPage({ params }: Props) {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";

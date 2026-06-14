@@ -174,3 +174,5 @@ export default async function MSMELoanPage() {
     </>
   );
 }
+
+export const dynamic = "force-dynamic";

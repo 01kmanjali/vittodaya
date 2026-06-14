@@ -177,3 +177,5 @@ export default async function EVLoanPage() {
     </>
   );
 }
+
+export const dynamic = "force-dynamic";

@@ -185,3 +185,5 @@ export default async function PersonalLoanPage() {
     </>
   );
 }
+
+export const dynamic = "force-dynamic";

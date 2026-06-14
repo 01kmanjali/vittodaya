@@ -198,3 +198,5 @@ export default async function LAPPage() {
     </>
   );
 }
+
+export const dynamic = "force-dynamic";
