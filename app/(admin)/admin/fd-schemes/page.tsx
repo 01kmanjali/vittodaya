@@ -13,6 +13,7 @@ import {
   LayoutGrid, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
@@ -324,6 +325,7 @@ function DeleteConfirm({ scheme, onConfirm, onCancel, loading }: {
 // ─── page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminFDSchemesPage() {
+  const { canView, canWrite } = usePageRole("fd-schemes");
   const qc = useQueryClient();
   const { data: schemes = [], isLoading } = useFDSchemes({ all: "true" } as never);
   const createMut = useCreateFDScheme();
@@ -418,15 +420,17 @@ export default function AdminFDSchemesPage() {
     { label: "Best Rate",          value: schemes.length ? `${Math.max(...schemes.map(s => getMaxRate(s))).toFixed(2)}%` : "—" },
   ];
 
+  if (!canView) return <AccessDenied page="FD Schemes" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>FD Schemes</h1>
           <p className="text-sm mt-0.5 text-muted-foreground">Manage fixed deposit schemes from partner institutions</p>
         </div>
-        <Button variant="primary" size="md" className="gap-2" onClick={() => setModal("add")}>
+        <Button variant="primary" size="md" className="gap-2" disabled={!canWrite} onClick={() => setModal("add")}>
           <Plus className="h-4 w-4" /> Add Scheme
         </Button>
       </div>
@@ -474,7 +478,7 @@ export default function AdminFDSchemesPage() {
             <div className="py-16 text-center">
               <LayoutGrid className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
               <p className="text-sm font-medium text-muted-foreground">No schemes found</p>
-              <Button variant="primary" size="sm" className="mt-4 gap-1.5" onClick={() => setModal("add")}>
+              <Button variant="primary" size="sm" className="mt-4 gap-1.5" disabled={!canWrite} onClick={() => setModal("add")}>
                 <Plus className="h-3.5 w-3.5" /> Add First Scheme
               </Button>
             </div>

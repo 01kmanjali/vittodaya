@@ -4,8 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFAQs, useCreateFAQ, useDeleteFAQ } from "@/lib/queries/useFAQs";
 import { toast } from "sonner";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 export default function AdminFAQsPage() {
+  const { canView, canWrite } = usePageRole("faqs");
   const { data: faqs = [], isLoading } = useFAQs();
   const createFAQ = useCreateFAQ();
   const deleteFAQ = useDeleteFAQ();
@@ -37,14 +39,16 @@ export default function AdminFAQsPage() {
     }
   }
 
+  if (!canView) return <AccessDenied page="FAQs" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>FAQ Management</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>{faqs.length} FAQs across {categories.length} categories</p>
         </div>
-        <Button type="button" variant="gold" size="md" onClick={() => setShowForm(!showForm)}>
+        <Button type="button" variant="gold" size="md" disabled={!canWrite} onClick={() => setShowForm(!showForm)}>
           + Add FAQ
         </Button>
       </div>

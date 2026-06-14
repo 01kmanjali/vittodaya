@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useInvestorRecords, useDeleteInvestorRecord } from "@/lib/queries/useInvestorRelations";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 export default function AdminInvestorRelationsPage() {
+  const { canView, canWrite } = usePageRole("investor-relations");
   const { data: records = [], isLoading } = useInvestorRecords();
   const deleteRecord = useDeleteInvestorRecord();
   const [activeTab, setActiveTab] = useState<"results" | "reports" | "board">("results");
@@ -14,14 +16,16 @@ export default function AdminInvestorRelationsPage() {
   const annualReports = records.filter(r => r.type === "annual_report");
   const boardMembers = records.filter(r => r.type === "board_member");
 
+  if (!canView) return <AccessDenied page="Investor Relations" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Investor Relations</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage financial results, annual reports, and board information</p>
         </div>
-        <Button type="button" variant="gold" size="md" onClick={() => setShowAddResult(!showAddResult)}>
+        <Button type="button" variant="gold" size="md" disabled={!canWrite} onClick={() => setShowAddResult(!showAddResult)}>
           + Add Record
         </Button>
       </div>
@@ -56,7 +60,7 @@ export default function AdminInvestorRelationsPage() {
                 ))}
               </div>
               <div className="flex gap-3 mt-4">
-                <Button type="button" variant="primary" size="md">Save</Button>
+                <Button type="button" variant="primary" size="md" disabled={!canWrite}>Save</Button>
                 <Button type="button" variant="neutral" size="md" onClick={() => setShowAddResult(false)}>Cancel</Button>
               </div>
             </div>

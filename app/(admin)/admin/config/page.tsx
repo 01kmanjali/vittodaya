@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Card/CardContent/CardHeader are used inside the Section component
 import { Button } from "@/components/ui/button";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 import {
   Loader2, Save, RotateCcw, LayoutGrid, Landmark, ShieldCheck,
   TrendingUp, Newspaper, Settings, Bell, Wrench, AlertTriangle, ChevronDown,
@@ -133,6 +134,7 @@ function TextInput({ label, value, onChange, type = "text" }: { label: string; v
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function AdminConfigPage() {
+  const { canView, canWrite } = usePageRole("config");
   const [config, setConfig]     = useState<Config | null>(null);
   const [original, setOriginal] = useState<Config | null>(null);
   const [loading, setLoading]   = useState(true);
@@ -223,6 +225,7 @@ export default function AdminConfigPage() {
     { key: "lap",      label: "Loan Against Property"  },
   ];
 
+  if (!canView) return <AccessDenied page="Configuration" />;
   return (
     <div>
       {/* Header */}

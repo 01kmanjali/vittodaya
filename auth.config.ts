@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { isAdminRole } from "@/lib/permissions";
 
 const ADMIN_ROUTES = ["/admin"];
 const USER_ROUTES  = ["/dashboard", "/applications", "/profile"];
@@ -11,13 +12,14 @@ export const authConfig: NextAuthConfig = {
     jwt({ token, user }) {
       if (user) {
         token.id   = user.id as string;
-        token.role = (user as { role: string }).role as "admin" | "user";
+        token.role = (user as { role: string }).role;
       }
       return token;
     },
     session({ session, token }) {
       session.user.id   = token.id   as string;
-      session.user.role = token.role as "admin" | "user";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      session.user.role = (token.role as any);
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
@@ -28,7 +30,7 @@ export const authConfig: NextAuthConfig = {
       if (ADMIN_ROUTES.some(r => pathname.startsWith(r))) {
         if (!isLoggedIn)
           return Response.redirect(new URL(`/login?redirect=${pathname}`, nextUrl));
-        if (role !== "admin")
+        if (!isAdminRole(role))
           return Response.redirect(new URL("/unauthorized", nextUrl));
         return true;
       }
@@ -40,7 +42,7 @@ export const authConfig: NextAuthConfig = {
       }
 
       if (AUTH_ROUTES.includes(pathname) && isLoggedIn) {
-        return Response.redirect(new URL(role === "admin" ? "/admin" : "/dashboard", nextUrl));
+        return Response.redirect(new URL(isAdminRole(role) ? "/admin" : "/dashboard", nextUrl));
       }
 
       return true;

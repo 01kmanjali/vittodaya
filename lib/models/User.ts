@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   phone: string;
-  role: "admin" | "user";
+  role: "super-admin" | "support-admin" | "operation-admin" | "auditor" | "admin" | "user";
   status: "active" | "inactive" | "pending";
   kycStatus: "verified" | "pending" | "rejected" | "not_started";
   panNumber?: string;
@@ -32,7 +32,7 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
     phone: { type: String, required: true, trim: true },
-    role: { type: String, enum: ["admin", "user"], default: "user" },
+    role: { type: String, enum: ["super-admin", "support-admin", "operation-admin", "auditor", "admin", "user"], default: "user" },
     status: { type: String, enum: ["active", "inactive", "pending"], default: "pending" },
     kycStatus: { type: String, enum: ["verified", "pending", "rejected", "not_started"], default: "not_started" },
     panNumber: { type: String, uppercase: true, trim: true },

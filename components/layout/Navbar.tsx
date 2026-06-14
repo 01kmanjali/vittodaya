@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useFeatureFlags, isFDAvailable } from "@/lib/queries/useFeatureFlags";
 
-type SessionInfo = { name: string; email: string; role: "admin" | "user" };
+type SessionInfo = { name: string; email: string; role: string };
 
 const loanProducts = [
   {

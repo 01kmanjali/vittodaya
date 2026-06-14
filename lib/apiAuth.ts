@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { isAdminRole, isSuperAdmin, type UserRole } from "@/lib/permissions";
 
 export interface JWTPayload {
   userId: string;
   email: string;
-  role: "admin" | "user";
+  role: UserRole;
 }
 
 export type AuthedHandler = (
@@ -13,19 +14,39 @@ export type AuthedHandler = (
   user: JWTPayload
 ) => Promise<NextResponse | Response>;
 
-export function withAuth(handler: AuthedHandler, requiredRole?: "admin" | "user") {
+/**
+ * requiredRole:
+ *  "admin"       → any admin role (backward-compat)
+ *  "super-admin" → super-admin / legacy admin only
+ *  UserRole[]    → must be one of the listed roles
+ *  undefined     → any authenticated user
+ */
+export function withAuth(
+  handler: AuthedHandler,
+  requiredRole?: "admin" | "super-admin" | UserRole[]
+) {
   return async (req: NextRequest, ctx: { params: Promise<Record<string, string>> }) => {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
     }
-    if (requiredRole === "admin" && session.user.role !== "admin") {
+
+    const role = session.user.role;
+
+    if (requiredRole === "admin" && !isAdminRole(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+    if (requiredRole === "super-admin" && !isSuperAdmin(role)) {
+      return NextResponse.json({ error: "Forbidden — super-admin only" }, { status: 403 });
+    }
+    if (Array.isArray(requiredRole) && !requiredRole.includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const payload: JWTPayload = {
       userId: session.user.id,
       email:  session.user.email!,
-      role:   session.user.role,
+      role,
     };
     return handler(req, ctx, payload);
   };

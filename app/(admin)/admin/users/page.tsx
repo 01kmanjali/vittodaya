@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAdminUsers } from "@/lib/queries/useAdminAnalytics";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 const kycColors: Record<string, { bg: string; text: string }> = {
   verified:    { bg: "#f0fdf4", text: "#16a34a" },
@@ -12,6 +13,7 @@ const kycColors: Record<string, { bg: string; text: string }> = {
 };
 
 export default function AdminUsersPage() {
+  const { canView, canWrite } = usePageRole("users");
   const [search, setSearch] = useState("");
   const { data, isLoading } = useAdminUsers();
   const allUsers = data?.users ?? [];
@@ -23,8 +25,10 @@ export default function AdminUsersPage() {
     u.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (!canView) return <AccessDenied page="Users" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Users</h1>

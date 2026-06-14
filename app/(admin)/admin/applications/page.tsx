@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useApplications, useUpdateApplicationStatus } from "@/lib/queries/useApplications";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 const statusColors: Record<string, { bg: string; text: string }> = {
   active:       { bg: "#f0fdf4", text: "#16a34a" },
@@ -22,6 +23,7 @@ function fmt(n: number) {
 const statuses = ["all", "active", "under_review", "matured", "submitted", "cancelled"];
 
 export default function AdminApplicationsPage() {
+  const { canView, canWrite } = usePageRole("applications");
   const { data: applications = [], isLoading } = useApplications();
   const updateStatus = useUpdateApplicationStatus();
   const [filter, setFilter] = useState("all");
@@ -35,8 +37,10 @@ export default function AdminApplicationsPage() {
     return matchesStatus && matchesSearch;
   });
 
+  if (!canView) return <AccessDenied page="Applications" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Applications</h1>

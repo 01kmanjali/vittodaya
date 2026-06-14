@@ -14,6 +14,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 import {
   TrendingUp, Wallet, FileText, CheckCircle, Zap,
   Activity, Shield, RefreshCw, Download, Loader2,
@@ -29,6 +30,7 @@ const disbursalChartConfig: ChartConfig = {
 const periods = ["This Month", "Last 3 Months", "Last 6 Months", "This Year"];
 
 export default function AdminAnalyticsPage() {
+  const { canView, canWrite } = usePageRole("analytics");
   const [period, setPeriod] = useState("Last 6 Months");
   const { data: stats, isLoading } = useAnalytics();
 
@@ -88,6 +90,7 @@ export default function AdminAnalyticsPage() {
     );
   }
 
+  if (!canView) return <AccessDenied page="Analytics" />;
   return (
     <div>
       <div className="flex items-center justify-between mb-6">

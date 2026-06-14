@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,13 +11,16 @@ import {
   LayoutDashboard, BarChart2, User, Factory, Car, Home, FileText,
   LayoutGrid, Building2, Newspaper, HelpCircle, TrendingUp, Users,
   ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe, Settings,
+  UserCog, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hasPageAccess, ROLE_LABELS, ROLE_COLORS } from "@/lib/permissions";
 
 interface NavItem {
   label: string;
   href: string;
   Icon: React.ElementType;
+  page: string;
 }
 
 interface NavSection {
@@ -29,50 +32,51 @@ const navSections: NavSection[] = [
   {
     section: "Overview",
     items: [
-      { label: "Dashboard",  href: "/admin",           Icon: LayoutDashboard },
-      { label: "Analytics",  href: "/admin/analytics", Icon: BarChart2 },
+      { label: "Dashboard",  href: "/admin",           Icon: LayoutDashboard, page: "dashboard"  },
+      { label: "Analytics",  href: "/admin/analytics", Icon: BarChart2,       page: "analytics"  },
     ],
   },
   {
     section: "Loan Products",
     items: [
-      { label: "Personal Loans",        href: "/admin/loans/personal", Icon: User },
-      { label: "MSME / Business Loans", href: "/admin/loans/msme",     Icon: Factory },
-      { label: "EV Loans",              href: "/admin/loans/ev",       Icon: Car },
-      { label: "Loan Against Property", href: "/admin/loans/lap",      Icon: Home },
-      { label: "Applications",          href: "/admin/applications",   Icon: FileText },
+      { label: "Personal Loans",        href: "/admin/loans/personal", Icon: User,    page: "loans" },
+      { label: "MSME / Business Loans", href: "/admin/loans/msme",     Icon: Factory, page: "loans" },
+      { label: "EV Loans",              href: "/admin/loans/ev",       Icon: Car,     page: "loans" },
+      { label: "Loan Against Property", href: "/admin/loans/lap",      Icon: Home,    page: "loans" },
+      { label: "Applications",          href: "/admin/applications",   Icon: FileText, page: "applications" },
     ],
   },
   {
     section: "Fixed Deposits",
     items: [
-      { label: "FD Schemes",    href: "/admin/fd-schemes", Icon: LayoutGrid },
-      { label: "Banks & NBFCs", href: "/admin/banks",      Icon: Building2 },
+      { label: "FD Schemes",    href: "/admin/fd-schemes", Icon: LayoutGrid, page: "fd-schemes" },
+      { label: "Banks & NBFCs", href: "/admin/banks",      Icon: Building2,  page: "banks"      },
     ],
   },
   {
     section: "Content",
     items: [
-      { label: "News & Media", href: "/admin/news-media", Icon: Newspaper },
-      { label: "FAQs",         href: "/admin/faqs",       Icon: HelpCircle },
+      { label: "News & Media", href: "/admin/news-media", Icon: Newspaper,  page: "news-media" },
+      { label: "FAQs",         href: "/admin/faqs",       Icon: HelpCircle, page: "faqs"       },
     ],
   },
   {
     section: "Finance",
     items: [
-      { label: "Investor Relations", href: "/admin/investor-relations", Icon: TrendingUp },
+      { label: "Investor Relations", href: "/admin/investor-relations", Icon: TrendingUp, page: "investor-relations" },
     ],
   },
   {
     section: "Users",
     items: [
-      { label: "Users", href: "/admin/users", Icon: Users },
+      { label: "Users", href: "/admin/users", Icon: Users, page: "users" },
     ],
   },
   {
     section: "System",
     items: [
-      { label: "Configuration", href: "/admin/config", Icon: Settings },
+      { label: "Admin Accounts", href: "/admin/accounts", Icon: UserCog,  page: "accounts" },
+      { label: "Configuration",  href: "/admin/config",   Icon: Settings, page: "config"   },
     ],
   },
 ];
@@ -85,6 +89,13 @@ function clearCookies() {
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
+
+  const role = session?.user?.role ?? "admin";
+  const userName = session?.user?.name ?? "Admin";
+  const userEmail = session?.user?.email ?? "";
+  const initials = userName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
 
@@ -99,6 +110,10 @@ export default function AdminSidebar() {
       prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
     );
   }
+
+  const visibleSections = navSections
+    .map(s => ({ ...s, items: s.items.filter(item => hasPageAccess(role, item.page)) }))
+    .filter(s => s.items.length > 0);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -137,9 +152,19 @@ export default function AdminSidebar() {
           </Button>
         </div>
 
+        {/* Role badge */}
+        {!sidebarCollapsed && (
+          <div className="px-4 pt-3 pb-1">
+            <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${ROLE_COLORS[role] ?? "bg-gray-100 text-gray-700 border-gray-200"}`}>
+              <ShieldCheck className="h-3 w-3" />
+              {ROLE_LABELS[role] ?? "Admin"}
+            </span>
+          </div>
+        )}
+
         {/* Nav */}
-        <nav className="flex-1 min-h-0 py-3 px-2 overflow-y-auto space-y-1">
-          {navSections.map(({ section, items }) => {
+        <nav className="flex-1 min-h-0 py-2 px-2 overflow-y-auto space-y-1">
+          {visibleSections.map(({ section, items }) => {
             const isSectionCollapsed = collapsedSections.includes(section);
 
             if (sidebarCollapsed) {
@@ -210,16 +235,17 @@ export default function AdminSidebar() {
           })}
         </nav>
 
-        {/* Footer */}
+        {/* Footer — real user info */}
         <div className="mt-auto p-3 border-t shrink-0 bg-white" style={{ borderColor: "var(--border)" }}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-3 px-2 py-2 mb-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "var(--primary)" }}>
-                A
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                style={{ background: "var(--primary)" }}>
+                {initials}
               </div>
               <div className="min-w-0">
-                <div className="text-xs font-semibold truncate">Admin User</div>
-                <div className="text-xs truncate text-muted-foreground">admin@vfspl.in</div>
+                <div className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{userName}</div>
+                <div className="text-xs truncate text-muted-foreground">{userEmail}</div>
               </div>
             </div>
           )}

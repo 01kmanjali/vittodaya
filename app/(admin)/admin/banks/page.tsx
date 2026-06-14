@@ -8,6 +8,7 @@ import {
   Plus, Pencil, Trash2, X, Loader2, Search, Building2, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -285,6 +286,7 @@ function DeleteModal({ bank, onClose, onConfirm, deleting }: {
 // ─── main page ────────────────────────────────────────────────────────────────
 
 export default function AdminBanksPage() {
+  const { canView, canWrite } = usePageRole("banks");
   const qc = useQueryClient();
 
   const { data: banks = [], isLoading } = useQuery<Bank[]>({
@@ -378,8 +380,10 @@ export default function AdminBanksPage() {
 
   const saving = createMut.isPending || updateMut.isPending;
 
+  if (!canView) return <AccessDenied page="Banks & NBFCs" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       {/* header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -388,7 +392,7 @@ export default function AdminBanksPage() {
             Manage partner institutions — {banks.length} total
           </p>
         </div>
-        <Button variant="primary" size="md" className="gap-2" onClick={() => { setEditTarget(null); setFormOpen(true); }}>
+        <Button variant="primary" size="md" className="gap-2" disabled={!canWrite} onClick={() => { setEditTarget(null); setFormOpen(true); }}>
           <Plus className="h-4 w-4" /> Add Institution
         </Button>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNews, useDeleteNews } from "@/lib/queries/useNews";
+import { AccessDenied, ReadOnlyBanner, usePageRole } from "@/components/admin/RoleGuard";
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
   "press-release":  { bg: "#eff6ff", text: "#1d4ed8" },
@@ -12,6 +13,7 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 };
 
 export default function AdminNewsMediaPage() {
+  const { canView, canWrite } = usePageRole("news-media");
   const { data: articles = [], isLoading } = useNews();
   const deleteNews = useDeleteNews();
   const [activeTab, setActiveTab] = useState<"articles" | "press" | "awards">("articles");
@@ -20,14 +22,16 @@ export default function AdminNewsMediaPage() {
   const pressReleases = articles.filter(a => a.category === "press-release");
   const awards = articles.filter(a => a.category === "awards");
 
+  if (!canView) return <AccessDenied page="News & Media" />;
   return (
     <div>
+      {!canWrite && <ReadOnlyBanner />}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>News & Media</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Manage news articles, press releases, and awards</p>
         </div>
-        <Button type="button" variant="gold" size="md">+ Add News</Button>
+        <Button type="button" variant="gold" size="md" disabled={!canWrite}>+ Add News</Button>
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-6">
