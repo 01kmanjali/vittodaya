@@ -20,6 +20,9 @@ export interface InvestorRecord {
   netProfit?: string;
   npa?: string;
   fileSize?: string;
+  fileUrl?: string;
+  imageColor?: string;
+  description?: string;
   publishedDate: string;
   resultType?: "quarterly" | "annual";
   name?: string;
