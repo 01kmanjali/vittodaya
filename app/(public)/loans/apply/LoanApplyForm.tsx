@@ -189,7 +189,7 @@ export default function LoanApplyForm() {
             `Mobile: ${form.mobile}`,
             form.email ? `Email: ${form.email}` : "",
             `Employment: ${form.employmentType}`,
-            form.monthlyIncome ? `Monthly Income: ₹${form.monthlyIncome}` : "",
+            form.monthlyIncome ? `Monthly Income: Rs ${form.monthlyIncome}` : "",
             form.purpose ? `Purpose: ${form.purpose}` : "",
             form.remarks ? `Notes: ${form.remarks}` : "",
           ].filter(Boolean).join(" | "),

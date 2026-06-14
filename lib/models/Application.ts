@@ -44,7 +44,7 @@ const applicationSchema = new Schema<IApplication>(
     userName: { type: String, required: true },
     userEmail: { type: String, required: true },
     type: { type: String, enum: ["fd", "personal", "msme", "ev", "lap"], required: true },
-    schemeId: { type: String, required: true },
+    schemeId: { type: String, required: false, default: "" },
     schemeName: { type: String, required: true },
     bankId: String,
     bankName: String,
