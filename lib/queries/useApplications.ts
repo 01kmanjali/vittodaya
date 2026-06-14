@@ -6,9 +6,11 @@ export interface Application {
   _id: string;
   userId: string;
   userName?: string;
+  type?: string;
   bankName?: string;
   schemeName?: string;
   fdNumber?: string;
+  loanNumber?: string;
   principalAmount: number;
   interestRate: number | string;
   tenureMonths: number;
