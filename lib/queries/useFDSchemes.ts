@@ -25,7 +25,7 @@ export interface FDScheme {
   featuredOrder?: number;
 }
 
-export type FDSchemeParams = { bankType?: string; taxSaver?: string; active?: string; [key: string]: string | undefined };
+export type FDSchemeParams = { bankType?: string; taxSaver?: string; active?: string; all?: string; [key: string]: string | undefined };
 
 async function fetchFDSchemes(params: FDSchemeParams = {}) {
   const qs = new URLSearchParams(

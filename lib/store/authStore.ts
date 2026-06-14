@@ -30,7 +30,7 @@ interface AuthState {
   isLoading: boolean;
   setUser: (user: AuthUser | null) => void;
   setLoading: (v: boolean) => void;
-  login: (email: string, password: string) => Promise<{ error?: string; role?: string }>;
+  login: (email: string, password: string, twoFactorToken?: string) => Promise<{ error?: string; role?: string; twoFactorRequired?: boolean }>;
   register: (name: string, email: string, phone: string, password: string) => Promise<{ error?: string; email?: string }>;
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
@@ -45,12 +45,29 @@ export const useAuthStore = create<AuthState>()(
       setUser:    (user) => set({ user }),
       setLoading: (v)    => set({ isLoading: v }),
 
-      login: async (email, password) => {
+      login: async (email, password, twoFactorToken?) => {
         set({ isLoading: true });
         try {
-          const result = await signIn("credentials", { email, password, redirect: false });
-          if (!result?.ok || result.error) {
-            return { error: "Invalid email or password" };
+          // Step 1: verify credentials and check if 2FA is required
+          if (!twoFactorToken) {
+            const pre = await fetch("/api/auth/preflight", {
+              method:  "POST",
+              headers: { "Content-Type": "application/json" },
+              body:    JSON.stringify({ email, password }),
+            });
+            const preData = await pre.json();
+            if (!pre.ok) return { error: preData.error ?? "Invalid email or password" };
+            if (preData.twoFactorRequired) return { twoFactorRequired: true };
+          }
+
+          // Step 2: sign in via NextAuth (with optional 2FA token)
+          const result = await signIn("credentials", {
+            email, password,
+            twoFactorToken: twoFactorToken ?? "",
+            redirect: false,
+          });
+          if (!result?.ok) {
+            return { error: twoFactorToken ? "Invalid 2FA code. Please try again." : "Login failed. Please try again." };
           }
           await get().fetchMe();
           return { role: get().user?.role };

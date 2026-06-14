@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard, BarChart2, User, Factory, Car, Home, FileText,
   LayoutGrid, Building2, Newspaper, HelpCircle, TrendingUp, Users,
-  ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe,
+  ChevronDown, ChevronLeft, ChevronRight, LogOut, Globe, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +67,12 @@ const navSections: NavSection[] = [
     section: "Users",
     items: [
       { label: "Users", href: "/admin/users", Icon: Users },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      { label: "Configuration", href: "/admin/config", Icon: Settings },
     ],
   },
 ];
