@@ -18,6 +18,11 @@ export interface IUser extends Document {
   pincode?: string;
   isSeniorCitizen: boolean;
   lastLogin?: Date;
+  phoneVerified?: boolean;
+  panVerified?: boolean;
+  aadhaarVerified?: boolean;
+  twoFactorEnabled?: boolean;
+  twoFactorSecret?: string;
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -39,6 +44,11 @@ const userSchema = new Schema<IUser>(
     pincode: String,
     isSeniorCitizen: { type: Boolean, default: false },
     lastLogin: Date,
+    phoneVerified:   { type: Boolean, default: false },
+    panVerified:     { type: Boolean, default: false },
+    aadhaarVerified: { type: Boolean, default: false },
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret:  { type: String, select: false },
   },
   { timestamps: true }
 );

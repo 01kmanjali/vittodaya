@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -129,47 +130,23 @@ function Dropdown({ label, children }: { label: string; children: React.ReactNod
   );
 }
 
-/* ─── Cookie helpers ───────────────────────────────────────────── */
-function readCookie(name: string) {
-  if (typeof document === "undefined") return "";
-  return (
-    document.cookie
-      .split("; ")
-      .find(p => p.startsWith(`${name}=`))
-      ?.split("=")[1] ?? ""
-  );
-}
-
-function clearSessionCookies() {
-  const exp = "Thu, 01 Jan 1970 00:00:00 UTC";
-  ["vf_auth", "vf_role", "vf_user_email", "vf_user_name"].forEach(name => {
-    document.cookie = `${name}=; expires=${exp}; path=/; SameSite=Lax`;
-  });
-}
-
 /* ─── Navbar ───────────────────────────────────────────────────── */
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [session, setSession] = useState<SessionInfo | null>(null);
+  const { data: nextAuthSession } = useSession();
   const pathname = usePathname();
 
-  useEffect(() => {
-    const auth = readCookie("vf_auth");
-    const role = readCookie("vf_role") as "admin" | "user";
-    if (!auth || (role !== "admin" && role !== "user")) { setSession(null); return; }
-    setSession({
-      role,
-      email: readCookie("vf_user_email") || (role === "admin" ? "admin@vfspl.in" : "user@vfspl.in"),
-      name:  readCookie("vf_user_name")  || (role === "admin" ? "Admin User"   : "User"),
-    });
-  }, [pathname]);
+  const session: SessionInfo | null = nextAuthSession?.user
+    ? {
+        role:  nextAuthSession.user.role,
+        email: nextAuthSession.user.email ?? "",
+        name:  nextAuthSession.user.name  ?? "",
+      }
+    : null;
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    clearSessionCookies();
-    setSession(null);
     setMobileOpen(false);
-    window.location.href = "/login";
+    await signOut({ callbackUrl: "/login" });
   }
 
   const initials = session?.name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase() ?? "";

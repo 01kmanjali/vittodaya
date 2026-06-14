@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/lib/models/User";
-import { signToken, cookieOptions } from "@/lib/auth";
+import OTP from "@/lib/models/OTP";
+import { sendOTPEmail } from "@/lib/mailer";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,17 +21,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 });
     }
 
-    const user = await User.create({ name, email, phone, password, role: "user", status: "pending" });
-    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+    const user = await User.create({
+      name, email, phone, password,
+      role: "user", status: "pending",
+    });
 
-    const res = NextResponse.json(
-      { message: "Registered successfully", user: { id: user.id, name: user.name, email: user.email, role: user.role } },
+    // Generate 6-digit OTP
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    await OTP.deleteMany({ userId: user._id, type: "email_verify" });
+    await OTP.create({
+      userId:    user._id,
+      type:      "email_verify",
+      code,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    });
+
+    await sendOTPEmail(user.email, user.name, code, "email_verify");
+
+    return NextResponse.json(
+      { message: "OTP sent to your email. Please verify to continue.", email: user.email },
       { status: 201 }
     );
-    res.cookies.set("vf_token", token, cookieOptions());
-    res.cookies.set("vf_auth", "1", { ...cookieOptions(), httpOnly: false });
-    res.cookies.set("vf_role", user.role, { ...cookieOptions(), httpOnly: false });
-    return res;
   } catch (err) {
     console.error("[register]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

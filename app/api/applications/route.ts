@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Application from "@/lib/models/Application";
 import User from "@/lib/models/User";
 import { withAuth } from "@/lib/apiAuth";
-import { JWTPayload } from "@/lib/auth";
+import { JWTPayload } from "@/lib/apiAuth";
 
 // GET /api/applications — admin: all; user: own
 export const GET = withAuth(async (req: NextRequest, _ctx: { params: Promise<Record<string, string>> }, auth: JWTPayload) => {

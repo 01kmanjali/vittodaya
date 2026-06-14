@@ -44,7 +44,7 @@ async function seed() {
     },
     {
       name: "Anjali Sharma",
-      email: "anjali@example.com",
+      email: "01kmanjali@gmail.com",
       password: userHash,
       phone: "9876543210",
       role: "user",
@@ -61,7 +61,7 @@ async function seed() {
       updatedAt: new Date(),
     },
   ]);
-  console.log("✓ Users seeded (admin@vfspl.in / Admin@123, anjali@example.com / User@1234)");
+  console.log("✓ Users seeded (admin@vfspl.in / Admin@123, 01kmanjali@gmail.com / User@1234)");
 
   // ---- Banks ----
   const banksCol = db.collection("banks");

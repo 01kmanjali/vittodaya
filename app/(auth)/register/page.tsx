@@ -38,7 +38,7 @@ export default function RegisterPage() {
       setError(result.error);
       return;
     }
-    router.push("/dashboard");
+    router.push(`/verify-email?email=${encodeURIComponent(result.email ?? email)}`);
   };
 
   return (

@@ -115,7 +115,7 @@ function LoginForm() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-700">User:</span>
-              <span className="font-mono text-blue-700">anjali@example.com / User@1234</span>
+              <span className="font-mono text-blue-700">01kmanjali@gmail.com / User@1234</span>
             </div>
           </div>
         </CardContent>

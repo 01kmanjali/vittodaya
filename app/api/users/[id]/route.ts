@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/lib/models/User";
 import { withAuth } from "@/lib/apiAuth";
-import { JWTPayload } from "@/lib/auth";
+import { JWTPayload } from "@/lib/apiAuth";
 
 // GET /api/users/:id
 export const GET = withAuth(async (_req: NextRequest, ctx: { params: Promise<Record<string, string>> }, auth: JWTPayload) => {
