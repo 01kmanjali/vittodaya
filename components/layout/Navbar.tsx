@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -159,8 +160,12 @@ export default function Navbar() {
       {/* ── Announcement bar ─────────────────────────────────────── */}
       <div className="text-white text-xs text-center py-1.5 px-4 font-medium hidden sm:block" style={{ background: "var(--primary-dark)" }}>
         <span className="opacity-80">RBI Registered NBFC</span>
-        <span className="mx-3 opacity-40">|</span>
-        Fixed Deposits up to <span className="font-bold text-amber-300">9.10% p.a.</span>
+        {fdAvailable && (
+          <>
+            <span className="mx-3 opacity-40">|</span>
+            Fixed Deposits up to <span className="font-bold text-amber-300">9.10% p.a.</span>
+          </>
+        )}
         <span className="mx-3 opacity-40">|</span>
         <Link href="/loans/personal" className="underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity">
           Apply for a Loan →
@@ -172,21 +177,8 @@ export default function Navbar() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group" onClick={() => setMobileOpen(false)}>
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105"
-              style={{ background: "linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%)" }}
-            >
-              <span className="text-white font-extrabold text-sm tracking-tight">V</span>
-            </div>
-            <div className="leading-tight">
-              <span className="font-extrabold text-base tracking-tight" style={{ color: "var(--primary)" }}>
-                Vittodaya
-              </span>
-              <span className="hidden sm:block text-[10px] font-medium tracking-widest uppercase" style={{ color: "var(--text-secondary)" }}>
-                Financial Services
-              </span>
-            </div>
+          <Link href="/" className="shrink-0" onClick={() => setMobileOpen(false)}>
+            <Logo height={38} />
           </Link>
 
           {/* ── Desktop nav ── */}

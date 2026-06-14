@@ -330,8 +330,6 @@ export default function AdminAccountsPage() {
   const currentRole = session?.user?.role ?? "";
   const qc = useQueryClient();
 
-  if (!isSuperAdmin(currentRole)) return <AccessDenied />;
-
   const { data: admins = [], isLoading } = useQuery<AdminAccount[]>({
     queryKey: ["admin-accounts"],
     queryFn: fetchAdmins,
@@ -361,6 +359,8 @@ export default function AdminAccountsPage() {
   const [editTarget, setEditTarget] = useState<AdminAccount | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminAccount | null>(null);
   const [resetTarget, setResetTarget] = useState<AdminAccount | null>(null);
+
+  if (!isSuperAdmin(currentRole)) return <AccessDenied />;
 
   const filtered = admins.filter(a => {
     const matchSearch = !search ||

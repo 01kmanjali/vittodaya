@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import Logo from "@/components/Logo";
 
 const footerSections = [
   {
@@ -42,14 +43,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-10">
           {/* Brand */}
           <div className="md:col-span-2 animate-fade-up">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow">
-                <span className="font-bold text-sm" style={{ color: "#0f4c81" }}>V</span>
-              </div>
-              <div>
-                <span className="font-bold text-lg block leading-tight" style={{ color: "var(--secondary-light)" }}>Vittodaya</span>
-                <span className="text-xs text-blue-300">Financial Services</span>
-              </div>
+            <div className="mb-4">
+              <Logo height={40} theme="dark" />
             </div>
             <p className="text-sm text-blue-200 leading-relaxed mb-4">
               Vittodaya Financial Services Pvt. Ltd. is an RBI-registered NBFC offering loans,

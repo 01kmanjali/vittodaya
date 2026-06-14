@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -37,36 +38,34 @@ export default function UserSidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
+      <div className="relative shrink-0 h-screen">
+        {/* Collapse toggle — floats on the right edge of the sidebar */}
+        <button
+          onClick={() => setCollapsed(v => !v)}
+          className="absolute top-5 -right-3 z-50 w-6 h-6 rounded-full bg-white border shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+          style={{ borderColor: "var(--border)" }}
+        >
+          {collapsed ? <ChevronRight className="h-3.5 w-3.5 text-gray-500" /> : <ChevronLeft className="h-3.5 w-3.5 text-gray-500" />}
+        </button>
+
       <aside
         className={cn(
-          "shrink-0 h-screen border-r bg-white flex flex-col overflow-hidden transition-all duration-300",
+          "h-full border-r bg-white flex flex-col overflow-hidden transition-all duration-300",
           collapsed ? "w-16" : "w-60"
         )}
         style={{ borderColor: "var(--border)" }}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-4 border-b shrink-0 justify-between" style={{ borderColor: "var(--border)" }}>
-          {!collapsed && (
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded flex items-center justify-center shrink-0" style={{ background: "var(--primary)" }}>
-                <span className="text-white font-bold text-xs">V</span>
-              </div>
-              <span className="font-bold text-sm" style={{ color: "var(--primary)" }}>Vittodaya</span>
+        <div className="h-16 flex items-center px-4 border-b shrink-0" style={{ borderColor: "var(--border)" }}>
+          {collapsed ? (
+            <Link href="/" className="mx-auto">
+              <Logo variant="icon" height={30} />
+            </Link>
+          ) : (
+            <Link href="/">
+              <Logo height={34} />
             </Link>
           )}
-          {collapsed && (
-            <div className="mx-auto w-7 h-7 rounded flex items-center justify-center" style={{ background: "var(--primary)" }}>
-              <span className="text-white font-bold text-xs">V</span>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("h-7 w-7 shrink-0", collapsed && "mx-auto")}
-            onClick={() => setCollapsed(v => !v)}
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
         </div>
 
         {/* Nav */}
@@ -148,6 +147,7 @@ export default function UserSidebar() {
           )}
         </div>
       </aside>
+      </div>
     </TooltipProvider>
   );
 }
